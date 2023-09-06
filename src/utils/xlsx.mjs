@@ -1,8 +1,7 @@
 import xlsx, { writeFile } from 'xlsx';
-import { join } from 'node:path';
 
 export async function loadXlsx(xlsxFile, sheetName) {
-  const workbook = await xlsx.readFile(join('spreadsheets', xlsxFile), {
+  const workbook = await xlsx.readFile(xlsxFile, {
     cellDates: true,
   });
 

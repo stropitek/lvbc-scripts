@@ -1,4 +1,4 @@
-export const xlsxFile = 'matches-23.xlsx';
+export const xlsxFile = 'input/matches-23.xlsx';
 
 export const factors = {
   // Each assigned match counts as 2
@@ -10,4 +10,6 @@ export const exempted = {
   'Lausanne M17F': true,
 };
 
-export const outputFile = 'matches-23-assigned.xlsx';
+export const outputFile = 'output/matches-23-assigned.xlsx';
+
+export const tunedInputFile = 'input/matches-23-assigned-tuned.xlsx';
