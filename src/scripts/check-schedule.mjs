@@ -1,11 +1,15 @@
-import { filterHomeMatches, loadMatches } from '../core/matches.mjs';
+import { initMatchAssignments, loadMatches } from '../core/matches.mjs';
 import { SCORER_TEAM } from '../utils/constants.mjs';
+import { logAssignmentLength } from '../utils/log.mjs';
 
 import { canScoreMatch } from './2023/checks.mjs';
-import { tunedInputFile } from './2023/params.mjs';
+import { tunedFile, xlsxFile } from './2023/params.mjs';
 
-const matches = await loadMatches(tunedInputFile);
-const homeMatches = filterHomeMatches(matches);
+const allMatches = await loadMatches(xlsxFile);
+const homeMatches = await loadMatches(tunedFile);
+
+const assignments = initMatchAssignments(homeMatches);
+logAssignmentLength(assignments);
 let errorCount = 0;
 
 for (let match of homeMatches) {
@@ -16,7 +20,7 @@ for (let match of homeMatches) {
     console.table([match]);
     continue;
   }
-  if (!canScoreMatch(match, scorer, matches)) {
+  if (!canScoreMatch(match, scorer, allMatches)) {
     errorCount++;
   }
 }

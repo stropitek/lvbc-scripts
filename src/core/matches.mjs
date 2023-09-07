@@ -1,21 +1,13 @@
 import assert from 'node:assert';
 
-import { DATE, SCORER_TEAM, TEAM_HOME } from '../utils/constants.mjs';
-import { convertTZ } from '../utils/date.mjs';
+import { DATE, RECEIVING_TEAM, SCORER_TEAM } from '../utils/constants.mjs';
 import { loadXlsx } from '../utils/xlsx.mjs';
 
 import { getTeams, isLausanneTeam } from './teams.mjs';
 
 export async function loadMatches(file, sheetName) {
   const data = await loadXlsx(file, sheetName);
-  return filterAndSortMatches(normalizeMatches(data));
-}
-
-function normalizeMatches(matches) {
-  return matches.map((match) => {
-    match[DATE] = convertTZ(match[DATE], 'Europe/Zurich');
-    return match;
-  });
+  return filterAndSortMatches(data);
 }
 
 function filterAndSortMatches(matches) {
@@ -46,8 +38,5 @@ export function initMatchAssignments(allMatches) {
 }
 
 export function filterHomeMatches(allMatches) {
-  const teams = getTeams(allMatches);
-  const lausanneTeams = teams.filter(isLausanneTeam);
-
-  return allMatches.filter((match) => lausanneTeams.includes(match[TEAM_HOME]));
+  return allMatches.filter((match) => match[RECEIVING_TEAM] === 'VBC Lausanne');
 }

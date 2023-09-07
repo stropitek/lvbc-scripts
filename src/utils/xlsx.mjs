@@ -14,9 +14,10 @@ export async function loadXlsx(xlsxFile, sheetName) {
   return data;
 }
 
-export async function writeXlsx(data, xlsxFile, sheetName) {
+export async function writeXlsx(data, xlsxFileName, sheetName) {
   const book = xlsx.utils.book_new();
   const WS = xlsx.utils.json_to_sheet(data);
-  xlsx.utils.book_append_sheet(book, WS, sheetName);
-  await writeFile(book, xlsxFile);
+  xlsx.utils.book_append_sheet(book, WS, sheetName || 'Sheet1');
+  await writeFile(book, xlsxFileName);
+  console.log(`wrote ${xlsxFileName}`);
 }

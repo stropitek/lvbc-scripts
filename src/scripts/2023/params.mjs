@@ -12,4 +12,22 @@ export const exempted = {
 
 export const outputFile = 'output/matches-23-assigned.xlsx';
 
-export const tunedInputFile = 'input/matches-23-assigned-tuned.xlsx';
+export const preassignedFile = 'input/matches-23-pre-assigned.xlsx';
+
+export const tunedFile = 'input/matches-23-assigned-tuned.xlsx';
+
+// from 0 = Sunday to 6 = Saturday
+// Matches are almost always at 20:30 so we don't add to the schedule if they train before
+export const trainingSchedule = {
+  'Lausanne III M4': [2, 4],
+  'Lausanne II F4': [2, 4],
+  'Lausanne II M2': [2, 4],
+  'Lausanne M19F': [],
+  'Lausanne M18G': [],
+  'Lausanne M23F': [],
+  'Lausanne I F3': [1],
+  'VBC Lausanne': [2, 4],
+  'Lausanne M17F': [],
+};
+
+export const MAX_ASSIGNMENTS = 10;
