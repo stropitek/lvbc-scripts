@@ -9,7 +9,7 @@ const allMatches = await loadMatches(xlsxFile);
 const homeMatches = await loadMatches(tunedFile);
 
 const assignments = initMatchAssignments(homeMatches);
-logAssignmentLength(assignments);
+
 let errorCount = 0;
 
 for (let match of homeMatches) {
@@ -24,6 +24,8 @@ for (let match of homeMatches) {
     errorCount++;
   }
 }
+
+logAssignmentLength(assignments);
 
 if (errorCount > 0) {
   console.error(`There are ${errorCount} errors in the schedule`);
