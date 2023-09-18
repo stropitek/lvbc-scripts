@@ -1,6 +1,11 @@
 import assert from 'node:assert';
 
-import { DATE, RECEIVING_TEAM, SCORER_TEAM } from '../utils/constants.mjs';
+import {
+  DATE,
+  MATCH_ID,
+  RECEIVING_TEAM,
+  SCORER_TEAM,
+} from '../utils/constants.mjs';
 import { loadXlsx } from '../utils/xlsx.mjs';
 
 import { getTeams, isLausanneTeam } from './teams.mjs';
@@ -20,18 +25,19 @@ function filterAndSortMatches(matches) {
 export function initMatchAssignments(allMatches) {
   const teams = getTeams(allMatches);
   const lausanneTeams = teams.filter(isLausanneTeam);
-  const homeMatches = filterHomeMatches(allMatches);
 
   const assignedMatchesPerTeam = {};
   for (let team of lausanneTeams) {
     assignedMatchesPerTeam[team] = [];
   }
 
-  for (let match of homeMatches) {
+  for (let match of allMatches) {
     const scorer = match[SCORER_TEAM];
     if (scorer) {
       assert(lausanneTeams.includes(scorer));
       assignedMatchesPerTeam[match[SCORER_TEAM]].push(match);
+    } else {
+      throw new Error(`no scorer team for match ${match[MATCH_ID]}`);
     }
   }
   return assignedMatchesPerTeam;
