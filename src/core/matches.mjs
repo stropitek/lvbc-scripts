@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 
+import { SEASON_START } from '../scripts/2023/params.mjs';
 import {
   DATE,
   MATCH_ID,
@@ -18,7 +19,7 @@ export async function loadMatches(file, sheetName) {
 function filterAndSortMatches(matches) {
   return matches
     .filter((line) => line)
-    .filter((line) => line[DATE].getTime() > Date.now())
+    .filter((line) => line[DATE].getTime() > SEASON_START)
     .sort((line1, line2) => line1[DATE].getTime() - line2[DATE].getTime());
 }
 
