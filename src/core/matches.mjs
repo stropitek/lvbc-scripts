@@ -35,7 +35,10 @@ export function initMatchAssignments(allMatches) {
   for (let match of allMatches) {
     const scorer = match[SCORER_TEAM];
     if (scorer) {
-      assert(lausanneTeams.includes(scorer));
+      assert(
+        lausanneTeams.includes(scorer),
+        `${scorer} is not a Lausanne team`,
+      );
       assignedMatchesPerTeam[match[SCORER_TEAM]].push(match);
     } else {
       throw new Error(`no scorer team for match ${match[MATCH_ID]}`);
