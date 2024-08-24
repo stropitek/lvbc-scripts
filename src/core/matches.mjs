@@ -1,12 +1,7 @@
 import assert from 'node:assert';
 
-import { SEASON_START } from '../scripts/2023/params.mjs';
-import {
-  DATE,
-  MATCH_ID,
-  RECEIVING_TEAM,
-  SCORER_TEAM,
-} from '../utils/constants.mjs';
+import { SEASON_START } from '../scripts/2024/params.mjs';
+import { DATE, LOCATION, MATCH_ID, SCORER_TEAM } from '../utils/constants.mjs';
 import { loadXlsx } from '../utils/xlsx.mjs';
 
 import { getTeams, isLausanneTeam } from './teams.mjs';
@@ -23,7 +18,7 @@ function filterAndSortMatches(matches) {
     .sort((line1, line2) => line1[DATE].getTime() - line2[DATE].getTime());
 }
 
-export function initMatchAssignments(allMatches) {
+export function initMatchTeamAssignments(allMatches) {
   const teams = getTeams(allMatches);
   const lausanneTeams = teams.filter(isLausanneTeam);
 
@@ -47,6 +42,8 @@ export function initMatchAssignments(allMatches) {
   return assignedMatchesPerTeam;
 }
 
+export function initMatchScorerAssignement(allMatches) {}
+
 export function filterHomeMatches(allMatches) {
-  return allMatches.filter((match) => match[RECEIVING_TEAM] === 'VBC Lausanne');
+  return allMatches.filter((match) => /Vennes/i.test(match[LOCATION]));
 }

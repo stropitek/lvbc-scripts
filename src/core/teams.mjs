@@ -1,6 +1,6 @@
 import { TEAM_AWAY, TEAM_HOME } from '../utils/constants.mjs';
 
-const lausanneReg = /^(VBC )?Lausanne/;
+const lausanneReg = /^(?<prefix>VBC )?Lausanne/;
 
 export function getTeams(matches) {
   return Array.from(
