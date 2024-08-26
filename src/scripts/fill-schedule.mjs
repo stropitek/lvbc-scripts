@@ -1,27 +1,24 @@
 import { initMatchAssignments, loadMatches } from '../core/matches.mjs';
-import { SCORER_TEAM } from '../utils/constants.mjs';
+import { SCORER_1, SCORER_TEAM } from '../utils/constants.mjs';
 import { logAssignmentLength } from '../utils/log.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
 
-import { canScoreMatch, hasTraining } from './2023/checks.mjs';
+import { canScoreMatch, hasTraining } from './2024/checks.mjs';
 import {
   factors,
   exempted,
-  outputFile,
+  assignedFile,
   preassignedFile,
   MAX_ASSIGNMENTS,
   xlsxFile,
-} from './2023/params.mjs';
+} from './2024/params.mjs';
 
+// Load all matches so that we can check if a player has a conflict
 const allMatches = await loadMatches(xlsxFile);
-
 const allHomeMatches = await loadMatches(preassignedFile);
 
 console.log(
-  allHomeMatches.reduce(
-    (acc, match) => (match[SCORER_TEAM] ? acc + 1 : acc),
-    0,
-  ),
+  allHomeMatches.reduce((acc, match) => (match[SCORER_1] ? acc + 1 : acc), 0),
   'matches already assigned',
 );
 
@@ -49,7 +46,7 @@ for (let team of Object.keys(assignedMatchesPerTeam)) {
   assignedMatches.push(...assignedMatchesPerTeam[team]);
 }
 
-await writeXlsx(assignedMatches, outputFile);
+await writeXlsx(assignedMatches, assignedFile);
 
 function getNextTeams(assignedMatches, match) {
   const result = Array.from(Object.entries(assignedMatches))

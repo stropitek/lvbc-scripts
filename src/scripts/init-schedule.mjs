@@ -6,6 +6,7 @@ import {
   LEAGUE_CLUBDESK,
   SCORER_1,
   SCORER_2,
+  SCORER_MANAGER,
   SCORER_PHONE_1,
   SCORER_PHONE_2,
 } from '../utils/constants.mjs';
@@ -26,9 +27,10 @@ try {
 
   const matches = await loadMatches(VBManagerInputFile);
   const homeMatches = filterHomeMatches(matches);
+  homeMatches[0][SCORER_MANAGER] = '';
   homeMatches[0][SCORER_1] = '';
-  homeMatches[0][SCORER_2] = '';
   homeMatches[0][SCORER_PHONE_1] = '';
+  homeMatches[0][SCORER_2] = '';
   homeMatches[0][SCORER_PHONE_2] = '';
 
   // Check that matches and players have the same league names

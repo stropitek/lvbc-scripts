@@ -1,7 +1,10 @@
 import process from 'process';
 
+import { loadVBManagerMatches } from '../../core/matches.mjs';
+import { translateLeagueToClubdesk } from '../../utils/clubdesk.mjs';
 import {
   DATE,
+  LEAGUE_CLUBDESK,
   MATCH_ID,
   SCORER_TEAM,
   TEAM_AWAY,
@@ -12,7 +15,9 @@ import { logConflict } from '../../utils/log.mjs';
 
 import { trainingSchedule } from './params.mjs';
 
-export function findConflict(match, team, allMatches) {
+const VBMMatches = await loadVBManagerMatches();
+
+export function findConflictLegacy(match, team, allMatches) {
   const teamMatches = allMatches.filter(
     (match) => match[TEAM_AWAY] === team || match[TEAM_HOME] === team,
   );
@@ -91,9 +96,21 @@ export function logMatchConflicts(conflicts) {
   console.table(simplified);
 }
 
+export function hasConflict(match, scorer) {
+  const league = scorer[LEAGUE_CLUBDESK];
+
+  return VBMMatches.filter(
+    (match) => translateLeagueToClubdesk(match) === league,
+  ).some((teamMatch) => isSameDay(teamMatch[DATE], match[DATE]));
+}
+
 export function hasTraining(match, team) {
   const day = match[DATE].getDay();
   const hours = trainingSchedule[team];
+
+  if (!hours) {
+    throw new Error(`Missing training schedule for team ${team}`);
+  }
 
   if (hours.includes(day)) {
     if (process.env.DEBUG) {
@@ -102,4 +119,22 @@ export function hasTraining(match, team) {
     return true;
   }
   return false;
+}
+
+export function canScoreMatch(scorer, match) {
+  const league = translateLeagueToClubdesk(match);
+  const scorerLeague = scorer[LEAGUE_CLUBDESK];
+
+  if (league === scorerLeague) {
+    return false;
+  }
+
+  if (hasTraining(match, scorerLeague)) {
+    return false;
+  }
+
+  if (hasConflict(match, scorer)) {
+    return false;
+  }
+  return true;
 }

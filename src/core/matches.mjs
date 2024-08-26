@@ -1,10 +1,14 @@
 import assert from 'node:assert';
 
-import { SEASON_START } from '../scripts/2024/params.mjs';
+import { SEASON_START, VBManagerInputFile } from '../scripts/2024/params.mjs';
 import { DATE, LOCATION, MATCH_ID, SCORER_TEAM } from '../utils/constants.mjs';
 import { loadXlsx } from '../utils/xlsx.mjs';
 
 import { getTeams, isLausanneTeam } from './teams.mjs';
+
+export async function loadVBManagerMatches() {
+  return loadMatches(VBManagerInputFile);
+}
 
 export async function loadMatches(file, sheetName) {
   const data = await loadXlsx(file, sheetName);

@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "eslint": "eslint . --cache"
+    "eslint": "eslint . --cache",
+    "prettier": "prettier --check ./src",
+    "prettier-write": "prettier --write ./"
   },
   "type": "module",
   "dependencies": {
     "date-fns": "^3.6.0",
+    "lodash-es": "^4.17.21",
     "papaparse": "^5.4.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
-    "eslint-config-zakodium": "^10.0.0"
+    "eslint-config-zakodium": "^10.0.0",
+    "prettier": "^3.3.3"
   }
 }
