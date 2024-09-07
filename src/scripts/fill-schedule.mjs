@@ -1,80 +1,82 @@
-import { initMatchAssignments, loadMatches } from '../core/matches.mjs';
-import { SCORER_1, SCORER_TEAM } from '../utils/constants.mjs';
-import { logAssignmentLength } from '../utils/log.mjs';
+import { loadMatches } from '../core/matches.mjs';
+import { getCandidates, getScorerFullName } from '../core/scorers.mjs';
+import {
+  MATCH_ID,
+  CLUBDESK_PHONE,
+  SCORER_1,
+  SCORER_PHONE_1,
+  SCORER_ID,
+  CLUBDESK_UID,
+  DATE,
+} from '../utils/constants.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
 
-import { canScoreMatch, hasTraining } from './2024/checks.mjs';
+import { canScoreMatch, assertTrainingSchedule } from './2024/checks.mjs';
 import {
-  factors,
-  exempted,
   assignedFile,
+  ASSIGNMENT_CUTOFF,
   preassignedFile,
-  MAX_ASSIGNMENTS,
-  xlsxFile,
 } from './2024/params.mjs';
 
+assertTrainingSchedule();
 // Load all matches so that we can check if a player has a conflict
-const allMatches = await loadMatches(xlsxFile);
-const allHomeMatches = await loadMatches(preassignedFile);
+const assignedMatches = await loadMatches(preassignedFile);
 
-console.log(
-  allHomeMatches.reduce((acc, match) => (match[SCORER_1] ? acc + 1 : acc), 0),
-  'matches already assigned',
-);
-
-const assignedMatchesPerTeam = initMatchAssignments(allHomeMatches);
-
-mainLoop: for (let homeMatch of allHomeMatches) {
-  if (homeMatch[SCORER_TEAM]) {
+let afterCutOffCount = 0;
+let conflictCount = 0;
+let assignedCount = 0;
+let alreadyAssignedCount = 0;
+let total = assignedMatches.length;
+let noCandidatesCount = 0;
+mainLoop: for (let match of assignedMatches) {
+  if (isAfterCutoff(match)) {
+    afterCutOffCount++;
     continue;
   }
-  const nextTeams = getNextTeams(assignedMatchesPerTeam, homeMatch);
-  for (let team of nextTeams) {
-    if (canScoreMatch(homeMatch, team, allMatches)) {
-      homeMatch[SCORER_TEAM] = team;
-      assignedMatchesPerTeam[team].push(homeMatch);
+  if (isAssigned(match)) {
+    alreadyAssignedCount++;
+    continue;
+  }
+  const candidates = getCandidates(assignedMatches);
+
+  if (candidates.length === 0) {
+    noCandidatesCount++;
+    continue;
+  }
+  for (let candidate of candidates) {
+    if (canScoreMatch(candidate, match)) {
+      match[SCORER_ID] = candidate[CLUBDESK_UID];
+      match[SCORER_1] = getScorerFullName(candidate);
+      match[SCORER_PHONE_1] = candidate[CLUBDESK_PHONE];
+      assignedCount++;
       continue mainLoop;
     }
   }
-  throw new Error('No team can score this match');
-}
-
-logAssignmentLength(assignedMatchesPerTeam);
-
-const assignedMatches = [];
-for (let team of Object.keys(assignedMatchesPerTeam)) {
-  assignedMatches.push(...assignedMatchesPerTeam[team]);
+  conflictCount++;
+  console.log(`No candidate found for match ${match[MATCH_ID]}`);
 }
 
 await writeXlsx(assignedMatches, assignedFile);
 
-function getNextTeams(assignedMatches, match) {
-  const result = Array.from(Object.entries(assignedMatches))
-    .sort((entry1, entry2) => {
-      const team1 = entry1[0];
-      const team2 = entry2[0];
-      const nb1 = entry1[1].length;
-      const nb2 = entry2[1].length;
-      const factor1 = factors[team1] || 1;
-      const factor2 = factors[team2] || 1;
-      let penalty1 = nb1 >= MAX_ASSIGNMENTS / factor1 ? 1_000 : 0;
-      if (hasTraining(match, team1)) {
-        penalty1 += 500;
-      }
-      let penalty2 = nb2 >= MAX_ASSIGNMENTS / factor2 ? 1_000 : 0;
-      if (hasTraining(match, team2)) {
-        penalty2 += 500;
-      }
+console.log(`
+  Total:            ${total}
+  Assigned:         ${assignedCount}
+  Conflict:         ${conflictCount}
+  No candidates:    ${noCandidatesCount}
+  After cutoff:     ${afterCutOffCount}
+  Already assigned: ${alreadyAssignedCount}
+  `);
 
-      return (
-        (factors[entry1[0]] || 1) * nb1 +
-        (exempted[entry1[0]] ? 1_000_000 : 0) +
-        penalty1 -
-        (factors[entry2[0]] || 1) * nb2 -
-        (exempted[entry2[0]] ? 1_000_000 : 0) -
-        penalty2
-      );
-    })
-    .map((entry) => entry[0]);
-  return result;
+function isAfterCutoff(match) {
+  if (match[DATE] > ASSIGNMENT_CUTOFF) {
+    return true;
+  }
+  return false;
+}
+
+function isAssigned(match) {
+  if (match[SCORER_ID]) {
+    return true;
+  }
+  return false;
 }
