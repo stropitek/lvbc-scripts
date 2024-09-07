@@ -2,7 +2,15 @@ import assert from 'node:assert';
 import { parseArgs } from 'node:util';
 
 import { loadMatches, loadVBManagerMatches } from '../core/matches.mjs';
-import { DATE, MATCH_ID, SCORER_TEAM } from '../utils/constants.mjs';
+import { loadClubdeskPlayers } from '../core/scorers.mjs';
+import {
+  CLUBDESK_LEAGUE,
+  CLUBDESK_UID,
+  DATE,
+  MATCH_ID,
+  SCORER_ID,
+  SCORER_TEAM,
+} from '../utils/constants.mjs';
 import { isApproximatelySameDate } from '../utils/date.mjs';
 
 import {
@@ -28,6 +36,7 @@ const args = parseArgs({
 });
 
 const allMatches = await loadVBManagerMatches();
+const scorers = await loadClubdeskPlayers();
 
 const scoredMatches = await loadMatches(
   args.values.external ? tunedFileExternal : tunedFile,
@@ -38,6 +47,7 @@ const conflicts = [];
 let notAssigned = [];
 let training = [];
 let changed = [];
+let invalidScorer = [];
 
 for (let match of scoredMatches) {
   const newMatch = allMatches.find(
@@ -47,15 +57,21 @@ for (let match of scoredMatches) {
   if (!isApproximatelySameDate(newMatch[DATE], match[DATE])) {
     changed.push({ match, newMatch });
   }
-  const scorer = match[SCORER_TEAM];
-  if (!scorer) {
+
+  const scorerID = match[SCORER_ID];
+  if (!scorerID) {
     notAssigned.push(match);
   } else {
+    const scorer = scorers.find((scorer) => scorer[CLUBDESK_UID] === scorerID);
+    if (!scorer) {
+      invalidScorer.push(match);
+      continue;
+    }
     const conflictedMatch = findConflict(match, scorer);
     if (conflictedMatch) {
       conflicts.push([match, conflictedMatch]);
     }
-    if (hasTraining(match, scorer)) {
+    if (hasTraining(match, scorer[CLUBDESK_LEAGUE])) {
       training.push(match);
     }
   }
@@ -82,5 +98,14 @@ if (training.length > 0) {
   console.error(`There are ${training.length} training conflicts`);
   if (args.values.verbose) {
     logMatches(training);
+  }
+}
+
+if (invalidScorer.length > 0) {
+  console.error(
+    `There are ${invalidScorer.length} matches with invalid scorer`,
+  );
+  if (args.values.verbose) {
+    logMatches(invalidScorer);
   }
 }

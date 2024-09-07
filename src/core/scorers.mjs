@@ -1,6 +1,10 @@
 import { groupBy } from 'lodash-es';
 
-import { MAX_ASSIGNMENTS, playersFile } from '../scripts/2024/params.mjs';
+import {
+  clubdeskPlayersFile,
+  MAX_ASSIGNMENTS,
+  playersFile,
+} from '../scripts/2024/params.mjs';
 import {
   CLUBDESK_FIRST_NAME,
   CLUBDESK_LAST_NAME,
@@ -11,6 +15,11 @@ import {
 import { loadCSV } from '../utils/csv.mjs';
 
 const allScorers = await loadCSV(playersFile);
+const clubdeskPlayers = await loadClubdeskPlayers();
+
+export function loadClubdeskPlayers() {
+  return loadCSV(clubdeskPlayersFile);
+}
 
 export function getCandidates(assignedMatches) {
   const matchByScorer = groupBy(assignedMatches, SCORER_ID);
@@ -71,5 +80,11 @@ function createPairsBy3(scorers) {
 }
 
 export function getScorerFullName(scorer) {
-  return `${scorer[CLUBDESK_FIRST_NAME]} ${scorer[CLUBDESK_LAST_NAME]} (${scorer[CLUBDESK_LEAGUE]})`;
+  let scorerData = scorer;
+  if (typeof scorer === 'string') {
+    scorerData = clubdeskPlayers.find(
+      (player) => player[CLUBDESK_UID] === scorer,
+    );
+  }
+  return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]} (${scorerData[CLUBDESK_LEAGUE]})`;
 }

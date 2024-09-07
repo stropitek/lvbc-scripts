@@ -2,6 +2,7 @@ import assert from 'assert';
 import process from 'process';
 
 import { loadVBManagerMatches } from '../../core/matches.mjs';
+import { getScorerFullName } from '../../core/scorers.mjs';
 import { translateLeagueToClubdesk } from '../../utils/clubdesk.mjs';
 import {
   DATE,
@@ -10,6 +11,7 @@ import {
   SCORER_TEAM,
   TEAM_AWAY,
   TEAM_HOME,
+  SCORER_ID,
 } from '../../utils/constants.mjs';
 import { dateToString, isSameDay } from '../../utils/date.mjs';
 
@@ -58,9 +60,9 @@ export function logMatches(matches, options = {}) {
     const list = {
       Day: match[DATE].getDay(),
       Date: match[DATE],
-      // 'Home team': match[TEAM_HOME],
-      // 'Away team': match[TEAM_AWAY],
-      'Scorer team': match[SCORER_TEAM],
+      'Home team': match[TEAM_HOME],
+      'Away team': match[TEAM_AWAY],
+      Scorer: getScorerFullName(match[SCORER_ID]),
     };
     if (options.homeTeam) {
       list['Home team'] = match[TEAM_HOME];
@@ -114,6 +116,9 @@ export function findConflict(match, scorer) {
 }
 
 export function hasTraining(match, team) {
+  if (match[MATCH_ID] == '361134') {
+    console.log(team);
+  }
   const matchDay = match[DATE].getDay();
 
   const schedule = trainingSchedule[team];
