@@ -3,10 +3,10 @@ import fs from 'node:fs/promises';
 import { filterHomeMatches, loadMatches } from '../core/matches.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
-  LEAGUE_CLUBDESK,
+  CLUBDESK_LEAGUE,
   SCORER_1,
   SCORER_2,
-  SCORER_MANAGER,
+  SCORER_ID,
   SCORER_PHONE_1,
   SCORER_PHONE_2,
 } from '../utils/constants.mjs';
@@ -27,7 +27,7 @@ try {
 
   const matches = await loadMatches(VBManagerInputFile);
   const homeMatches = filterHomeMatches(matches);
-  homeMatches[0][SCORER_MANAGER] = '';
+  homeMatches[0][SCORER_ID] = '';
   homeMatches[0][SCORER_1] = '';
   homeMatches[0][SCORER_PHONE_1] = '';
   homeMatches[0][SCORER_2] = '';
@@ -36,7 +36,7 @@ try {
   // Check that matches and players have the same league names
   const players = await loadCSV(playersFile);
   const matchTeams = new Set(homeMatches.map(translateLeagueToClubdesk));
-  const playerTeams = new Set(players.map((player) => player[LEAGUE_CLUBDESK]));
+  const playerTeams = new Set(players.map((player) => player[CLUBDESK_LEAGUE]));
   if (matchTeams.has(undefined) || playerTeams.has(undefined)) {
     throw new Error('Some matches or players have no league');
   }
@@ -47,5 +47,5 @@ try {
     }
   }
 
-  await writeXlsx(homeMatches, preassignedFile, 'Sheet1');
+  await writeXlsx(homeMatches, preassignedFile, 'Sheet1', [SCORER_ID]);
 }

@@ -46,8 +46,6 @@ export function initMatchTeamAssignments(allMatches) {
   return assignedMatchesPerTeam;
 }
 
-export function initMatchScorerAssignement(allMatches) {}
-
 export function filterHomeMatches(allMatches) {
   return allMatches.filter((match) => /Vennes/i.test(match[LOCATION]));
 }

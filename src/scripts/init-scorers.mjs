@@ -1,6 +1,6 @@
 import {
-  BIRTH_YEAR_CLUBDESK,
-  LEAGUE_CLUBDESK,
+  CLUBDESK_BIRTH_YEAR,
+  CLUBDESK_LEAGUE,
   minScorerAge,
 } from '../utils/constants.mjs';
 import { loadCSV, writeCSV } from '../utils/csv.mjs';
@@ -14,10 +14,10 @@ try {
   });
 
   const players = result.filter((row) => {
-    const age = year - Number(row[BIRTH_YEAR_CLUBDESK]);
+    const age = year - Number(row[CLUBDESK_BIRTH_YEAR]);
     return (
       row.Marqueur === 'Marqueur' &&
-      row[LEAGUE_CLUBDESK] !== 'Arbitre' &&
+      row[CLUBDESK_LEAGUE] !== 'Arbitre' &&
       age >= minScorerAge
     );
   });

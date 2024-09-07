@@ -1,10 +1,11 @@
+import assert from 'assert';
 import process from 'process';
 
 import { loadVBManagerMatches } from '../../core/matches.mjs';
 import { translateLeagueToClubdesk } from '../../utils/clubdesk.mjs';
 import {
   DATE,
-  LEAGUE_CLUBDESK,
+  CLUBDESK_LEAGUE,
   MATCH_ID,
   SCORER_TEAM,
   TEAM_AWAY,
@@ -13,7 +14,30 @@ import {
 import { dateToString, isSameDay } from '../../utils/date.mjs';
 import { logConflict } from '../../utils/log.mjs';
 
-import { trainingSchedule } from './params.mjs';
+import {
+  MAX_MATCH_AFTER_TRAINING_MINUTES,
+  MIN_MATCH_BEFORE_TRAINING_MINUTES,
+  trainingSchedule,
+} from './params.mjs';
+
+const hourRegex = /^\d{2}:\d{2}$/;
+
+export function assertTrainingSchedule() {
+  for (let [team, schedule] of Object.entries(trainingSchedule)) {
+    for (let [day, timeStart, timeEnd] of schedule) {
+      if (!Number.isInteger(day) || day < 0 || day > 6) {
+        throw new Error(
+          'Invalid day in training schedule, should be an interger between 0 and 6',
+        );
+      }
+      if (!hourRegex.test(timeStart) || !hourRegex.test(timeEnd)) {
+        throw new Error(
+          `Invalid hour format in training schedule for team ${team}`,
+        );
+      }
+    }
+  }
+}
 
 const VBMMatches = await loadVBManagerMatches();
 
@@ -97,7 +121,7 @@ export function logMatchConflicts(conflicts) {
 }
 
 export function hasConflict(match, scorer) {
-  const league = scorer[LEAGUE_CLUBDESK];
+  const league = scorer[CLUBDESK_LEAGUE];
 
   return VBMMatches.filter(
     (match) => translateLeagueToClubdesk(match) === league,
@@ -105,25 +129,55 @@ export function hasConflict(match, scorer) {
 }
 
 export function hasTraining(match, team) {
-  const day = match[DATE].getDay();
-  const hours = trainingSchedule[team];
+  const matchDay = match[DATE].getDay();
 
-  if (!hours) {
-    throw new Error(`Missing training schedule for team ${team}`);
-  }
+  const schedule = trainingSchedule[team];
 
-  if (hours.includes(day)) {
-    if (process.env.DEBUG) {
-      console.log(`${team} has training on ${day}`);
+  assert(schedule, `Missing training schedule for team ${team}`);
+
+  for (let [day, timeStart, timeEnd] of schedule) {
+    if (matchDay === day) {
+      const hourStart = Number(timeStart.slice(0, 2));
+      const minuteStart = Number(timeStart.slice(3));
+      const hourEnd = Number(timeEnd.slice(0, 2));
+      const minuteEnd = Number(timeEnd.slice(3));
+      const trainingDateStart = new Date(match[DATE]);
+      trainingDateStart.setHours(hourStart, minuteStart);
+      const trainingDateEnd = new Date(match[DATE]);
+      trainingDateEnd.setHours(hourEnd, minuteEnd);
+      if (match[DATE] > trainingDateEnd) {
+        const diff = match[DATE].getTime() - trainingDateEnd.getTime();
+        if (diff <= MAX_MATCH_AFTER_TRAINING_MINUTES * 60 * 1000) {
+          // Close to training end
+          return false;
+        }
+      } else if (match[DATE] < trainingDateStart) {
+        const diff = trainingDateStart.getTime() - match[DATE].getTime();
+        if (diff >= MIN_MATCH_BEFORE_TRAINING_MINUTES * 60 * 1000) {
+          // Can score after match
+          return false;
+        }
+      } else {
+        // Training conflict
+        if (process.env.DEBUG) {
+          console.log(`${team} has training on ${matchDay}`);
+        }
+        return true;
+      }
     }
-    return true;
   }
+
   return false;
 }
 
 export function canScoreMatch(scorer, match) {
   const league = translateLeagueToClubdesk(match);
-  const scorerLeague = scorer[LEAGUE_CLUBDESK];
+  const scorerLeague = scorer[CLUBDESK_LEAGUE];
+  const offset = match[DATE].getTimezoneOffset();
+  assert(
+    offset === -120 || offset === -60,
+    `The match date for ${match[MATCH_ID]} is not in the expected time zone.`,
+  );
 
   if (league === scorerLeague) {
     return false;

@@ -1,23 +1,30 @@
 import { groupBy } from 'lodash-es';
 
-import { playersFile } from '../scripts/2024/params.mjs';
+import { MAX_ASSIGNMENTS, playersFile } from '../scripts/2024/params.mjs';
 import {
-  FIRST_NAME_CLUBDESK,
-  LAST_NAME_CLUBDESK,
-  LEAGUE_CLUBDESK,
-  SCORER_MANAGER,
+  CLUBDESK_FIRST_NAME,
+  CLUBDESK_LAST_NAME,
+  CLUBDESK_LEAGUE,
+  CLUBDESK_UID,
+  SCORER_ID,
 } from '../utils/constants.mjs';
 import { loadCSV } from '../utils/csv.mjs';
 
 const allScorers = await loadCSV(playersFile);
 
 export function getCandidates(assignedMatches) {
-  const assignedByManager = groupBy(assignedMatches, SCORER_MANAGER);
-  const candidates = allScorers.slice();
+  const matchByScorer = groupBy(assignedMatches, SCORER_ID);
+  delete matchByScorer.undefined;
+  delete matchByScorer[''];
+  const candidates = allScorers.slice().filter((candidate) => {
+    return (
+      (matchByScorer[candidate[CLUBDESK_UID]]?.length ?? 0) < MAX_ASSIGNMENTS
+    );
+  });
   candidates.sort(
     (scorer1, scorer2) =>
-      (assignedByManager[getScorerFullName(scorer1)]?.length ?? 0) -
-      (assignedByManager[getScorerFullName(scorer2)]?.length ?? 0),
+      (matchByScorer[scorer1[CLUBDESK_UID]]?.length ?? 0) -
+      (matchByScorer[scorer2[CLUBDESK_UID]]?.length ?? 0),
   );
 
   return candidates;
@@ -28,7 +35,7 @@ export function getCandidates(assignedMatches) {
  * @param {*} scorers List of clubdesk scorers
  */
 export function createScorerPairs(scorers) {
-  const scorerGroups = groupBy(scorers, LEAGUE_CLUBDESK);
+  const scorerGroups = groupBy(scorers, CLUBDESK_LEAGUE);
   const pairs = [];
   for (let [key, scorers] of Object.entries(scorerGroups)) {
     if (scorers.length < 2) {
@@ -64,5 +71,5 @@ function createPairsBy3(scorers) {
 }
 
 export function getScorerFullName(scorer) {
-  return `${scorer[FIRST_NAME_CLUBDESK]} ${scorer[LAST_NAME_CLUBDESK]}`;
+  return `${scorer[CLUBDESK_FIRST_NAME]} ${scorer[CLUBDESK_LAST_NAME]} (${scorer[CLUBDESK_LEAGUE]})`;
 }
