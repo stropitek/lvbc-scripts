@@ -41,24 +41,6 @@ export function assertTrainingSchedule() {
 
 const VBMMatches = await loadVBManagerMatches();
 
-export function findConflictLegacy(match, team, allMatches) {
-  const teamMatches = allMatches.filter(
-    (match) => match[TEAM_AWAY] === team || match[TEAM_HOME] === team,
-  );
-  const conflictingMatch = teamMatches.find((teamMatch) =>
-    isSameDay(teamMatch[DATE], match[DATE]),
-  );
-  if (conflictingMatch) {
-    if (process.env.DEBUG) {
-      console.log(`${team} has a conflict`);
-      logConflict(match, conflictingMatch);
-    }
-  }
-  return teamMatches.find((teamMatch) =>
-    isSameDay(teamMatch[DATE], match[DATE]),
-  );
-}
-
 export function logMatchDateChange(originalAndNew) {
   const list = originalAndNew.map(({ newMatch, match }) => {
     return {
@@ -173,11 +155,6 @@ export function hasTraining(match, team) {
 export function canScoreMatch(scorer, match) {
   const league = translateLeagueToClubdesk(match);
   const scorerLeague = scorer[CLUBDESK_LEAGUE];
-  const offset = match[DATE].getTimezoneOffset();
-  assert(
-    offset === -120 || offset === -60,
-    `The match date for ${match[MATCH_ID]} is not in the expected time zone.`,
-  );
 
   if (league === scorerLeague) {
     return false;

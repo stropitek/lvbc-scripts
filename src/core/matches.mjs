@@ -16,6 +16,7 @@ export async function loadMatches(file, sheetName) {
 }
 
 function filterAndSortMatches(matches) {
+  assertMatchDates(matches);
   return matches
     .filter((line) => line)
     .filter((line) => line[DATE].getTime() > SEASON_START)
@@ -48,4 +49,14 @@ export function initMatchTeamAssignments(allMatches) {
 
 export function filterHomeMatches(allMatches) {
   return allMatches.filter((match) => /Vennes/i.test(match[LOCATION]));
+}
+
+function assertMatchDates(matches) {
+  for (let match of matches) {
+    const offset = match[DATE].getTimezoneOffset();
+    assert(
+      offset === -120 || offset === -60,
+      `The match date for ${match[MATCH_ID]} is not in the expected time zone.`,
+    );
+  }
 }

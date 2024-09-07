@@ -1,4 +1,4 @@
-import xlsx, { writeFile } from 'xlsx';
+import xlsx from 'xlsx';
 
 export async function loadXlsx(xlsxFile, sheetName) {
   const workbook = await xlsx.readFile(xlsxFile, {
@@ -37,6 +37,6 @@ export async function writeXlsx(
   const book = xlsx.utils.book_new();
   const WS = xlsx.utils.json_to_sheet(orderedData);
   xlsx.utils.book_append_sheet(book, WS, sheetName || 'Sheet1');
-  await writeFile(book, xlsxFileName);
+  await xlsx.writeFile(book, xlsxFileName);
   console.log(`wrote ${xlsxFileName}`);
 }
