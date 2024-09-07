@@ -10,22 +10,22 @@ export const exempted = {
   'Lausanne M17F': true,
 };
 
-export const clubdeskPlayersFile = 'input/24/clubdesk-players.csv';
+export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
 // ↓↓↓ init-scorers.mjs
-export const playersFile = 'output/24/players.csv';
+export const playersFile = 'files/24/output/players.csv';
 
-export const VBManagerInputFile = 'input/24/vb-manager.xlsx';
+export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';
 // ↓↓↓ init-schedule.mjs
-export const preassignedFile = 'input/24/pre-assigned.xlsx';
+export const preassignedFile = 'files/24/input/pre-assigned.xlsx';
 // ↓↓↓ fill-schedule.mjs
-export const assignedFile = 'output/24/assigned.xlsx';
-export const tunedFile = 'input/24/assigned-tuned.xlsx';
+export const assignedFile = 'files/24/output/assigned.xlsx';
+export const tunedFile = 'files/24/input/assigned-tuned.xlsx';
 
 // ↓↓↓ rewrite.mjs, from tuned file and VBManagerInputFile
-export const rewriteFileExternal = 'output/24/googlesheet-rewritten.xlsx';
+export const rewriteFileExternal = 'files/24/output/googlesheet-rewritten.xlsx';
 
 // ↓↓↓ Google sheet export
-export const tunedFileExternal = 'input/24/googlesheet.xlsx';
+export const tunedFileExternal = 'files/24/input/googlesheet.xlsx';
 
 export const SEASON_START = new Date('2024-09-01');
 
