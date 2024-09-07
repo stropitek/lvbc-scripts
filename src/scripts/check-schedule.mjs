@@ -1,10 +1,9 @@
 import assert from 'node:assert';
 import { parseArgs } from 'node:util';
 
-import { initMatchAssignments, loadMatches } from '../core/matches.mjs';
+import { loadMatches, loadVBManagerMatches } from '../core/matches.mjs';
 import { DATE, MATCH_ID, SCORER_TEAM } from '../utils/constants.mjs';
 import { isApproximatelySameDate } from '../utils/date.mjs';
-import { logAssignmentLength } from '../utils/log.mjs';
 
 import {
   findConflict,
@@ -13,11 +12,7 @@ import {
   logMatchDateChange,
   logMatches,
 } from './2024/checks.mjs';
-import {
-  tunedFile,
-  tunedFileExternal,
-  VBManagerInputFile,
-} from './2024/params.mjs';
+import { tunedFile, tunedFileExternal } from './2024/params.mjs';
 
 const args = parseArgs({
   options: {
@@ -32,21 +27,19 @@ const args = parseArgs({
   },
 });
 
-const allMatches = await loadMatches(VBManagerInputFile);
+const allMatches = await loadVBManagerMatches();
 
-const homeMatches = await loadMatches(
+const scoredMatches = await loadMatches(
   args.values.external ? tunedFileExternal : tunedFile,
 );
-console.log(`loaded ${homeMatches.length} matches`);
-
-const assignments = initMatchAssignments(homeMatches);
+console.log(`loaded ${scoredMatches.length} matches`);
 
 const conflicts = [];
 let notAssigned = [];
 let training = [];
 let changed = [];
 
-for (let match of homeMatches) {
+for (let match of scoredMatches) {
   const newMatch = allMatches.find(
     (vbMatch) => vbMatch[MATCH_ID] === match[MATCH_ID],
   );
@@ -58,7 +51,7 @@ for (let match of homeMatches) {
   if (!scorer) {
     notAssigned.push(match);
   } else {
-    const conflictedMatch = findConflict(match, scorer, allMatches);
+    const conflictedMatch = findConflict(match, scorer);
     if (conflictedMatch) {
       conflicts.push([match, conflictedMatch]);
     }
@@ -67,8 +60,6 @@ for (let match of homeMatches) {
     }
   }
 }
-
-logAssignmentLength(assignments);
 
 if (changed.length > 0) {
   console.error(`There are ${changed.length} matches with a new date`);

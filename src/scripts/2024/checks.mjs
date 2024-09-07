@@ -12,7 +12,6 @@ import {
   TEAM_HOME,
 } from '../../utils/constants.mjs';
 import { dateToString, isSameDay } from '../../utils/date.mjs';
-import { logConflict } from '../../utils/log.mjs';
 
 import {
   MAX_MATCH_AFTER_TRAINING_MINUTES,
@@ -103,11 +102,15 @@ export function logMatchConflicts(conflicts) {
 }
 
 export function hasConflict(match, scorer) {
-  const league = scorer[CLUBDESK_LEAGUE];
+  const conflictingMatch = findConflict(match, scorer);
+  return conflictingMatch !== undefined;
+}
 
-  return VBMMatches.filter(
+export function findConflict(match, scorer) {
+  const league = scorer[CLUBDESK_LEAGUE];
+  VBMMatches.filter(
     (match) => translateLeagueToClubdesk(match) === league,
-  ).some((teamMatch) => isSameDay(teamMatch[DATE], match[DATE]));
+  ).find((teamMatch) => isSameDay(teamMatch[DATE], match[DATE]));
 }
 
 export function hasTraining(match, team) {

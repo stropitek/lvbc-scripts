@@ -1,27 +1,23 @@
 export const year = 2024;
 
-export const factors = {
-  // Each assigned match counts as 2
-  'Lausanne M18G': 2.5,
-};
-
-// Those teams cannot be assigned matches
-export const exempted = {
-  'Lausanne M17F': true,
-};
-
 export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
-// ↓↓↓ init-scorers.mjs
+// ↓↓↓ init-scorers.mjs - Same fields as clubdesk file but filtered
 export const playersFile = 'files/24/output/players.csv';
 
 export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';
-// ↓↓↓ init-schedule.mjs
+// ↓↓↓ init-schedule.mjs - Filtered and sorted. Only home matches kept. Additional columns for scorer added.
 export const preassignedFile = 'files/24/input/pre-assigned.xlsx';
-// ↓↓↓ fill-schedule.mjs
-export const assignedFile = 'files/24/output/assigned.xlsx';
-export const tunedFile = 'files/24/input/assigned-tuned.xlsx';
 
-// ↓↓↓ rewrite.mjs, from tuned file and VBManagerInputFile
+// The preassigned file can now be tweaked
+// Usually:
+//   - Junior matches are merged together
+
+// ↓↓↓ fill-schedule.mjs - Scorers are assigned to matches.
+export const assignedFile = 'files/24/output/assigned.xlsx';
+
+export const tunedFile = 'files/24/input/assigned-tuned.xlsx';
+// ↓↓↓ check-schedule.mjs - Analyses file and logs conflicts.
+// ↓↓↓ rewrite.mjs - From tuned file and VBManagerInputFile. Makes sure the ids and dates are correct.
 export const rewriteFileExternal = 'files/24/output/googlesheet-rewritten.xlsx';
 
 // ↓↓↓ Google sheet export
