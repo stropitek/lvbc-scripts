@@ -110,15 +110,14 @@ export function hasConflict(match, scorer) {
 
 export function findConflict(match, scorer) {
   const league = scorer[CLUBDESK_LEAGUE];
-  VBMMatches.filter(
+  return VBMMatches.filter(
     (match) => translateLeagueToClubdesk(match) === league,
-  ).find((teamMatch) => isSameDay(teamMatch[DATE], match[DATE]));
+  ).find((teamMatch) => {
+    return isSameDay(teamMatch[DATE], match[DATE]);
+  });
 }
 
 export function hasTraining(match, team) {
-  if (match[MATCH_ID] == '361134') {
-    console.log(team);
-  }
   const matchDay = match[DATE].getDay();
 
   const schedule = trainingSchedule[team];

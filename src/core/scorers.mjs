@@ -15,6 +15,7 @@ import {
 import { loadCSV } from '../utils/csv.mjs';
 
 const allScorers = await loadCSV(playersFile);
+const shuffledScorers = allScorers.slice().sort(() => Math.random() - 0.5);
 const clubdeskPlayers = await loadClubdeskPlayers();
 
 export function loadClubdeskPlayers() {
@@ -25,7 +26,7 @@ export function getCandidates(assignedMatches) {
   const matchByScorer = groupBy(assignedMatches, SCORER_ID);
   delete matchByScorer.undefined;
   delete matchByScorer[''];
-  const candidates = allScorers.slice().filter((candidate) => {
+  const candidates = shuffledScorers.slice().filter((candidate) => {
     return (
       (matchByScorer[candidate[CLUBDESK_UID]]?.length ?? 0) < MAX_ASSIGNMENTS
     );

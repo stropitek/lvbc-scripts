@@ -9,7 +9,6 @@ import {
   DATE,
   MATCH_ID,
   SCORER_ID,
-  SCORER_TEAM,
 } from '../utils/constants.mjs';
 import { isApproximatelySameDate } from '../utils/date.mjs';
 

@@ -63,9 +63,9 @@ export const trainingSchedule = {
   ],
 };
 
-export const ASSIGNMENT_CUTOFF = new Date('2025-10-26');
+export const ASSIGNMENT_CUTOFF = new Date('2024-12-15');
 
-export const MAX_ASSIGNMENTS = 2;
+export const MAX_ASSIGNMENTS = 1;
 
 export const MAX_MATCH_AFTER_TRAINING_MINUTES = 45;
 export const MIN_MATCH_BEFORE_TRAINING_MINUTES = 1440;

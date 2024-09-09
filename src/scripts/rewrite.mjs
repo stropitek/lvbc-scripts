@@ -10,7 +10,6 @@ import {
 const tunedMatches = await loadXlsx(tunedFileExternal);
 const originalMatches = await loadXlsx(VBManagerInputFile);
 
-console.log(tunedMatches[0]);
 for (let tunedMatch of tunedMatches) {
   const preassignedMatch = originalMatches.find(
     (match) => String(match[MATCH_ID]) === String(tunedMatch[MATCH_ID]),
@@ -22,7 +21,5 @@ for (let tunedMatch of tunedMatches) {
   }
   tunedMatch[DATE] = preassignedMatch[DATE];
 }
-
-console.log(tunedMatches[0]);
 
 await writeXlsx(tunedMatches, rewriteFileExternal);
