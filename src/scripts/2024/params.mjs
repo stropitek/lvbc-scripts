@@ -4,6 +4,7 @@ export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
 // ↓↓↓ init-scorers.mjs - Same fields as clubdesk file but filtered
 export const playersFile = 'files/24/output/players.csv';
 
+// VB file such as downloaded from VB Manager. Don't touch it!
 export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';
 // ↓↓↓ init-schedule.mjs - Filtered and sorted. Only home matches kept. Additional columns for scorer added.
 export const preassignedFile = 'files/24/input/pre-assigned.xlsx';
@@ -63,9 +64,9 @@ export const trainingSchedule = {
   ],
 };
 
-export const ASSIGNMENT_CUTOFF = new Date('2024-12-15');
+export const ASSIGNMENT_CUTOFF = new Date('2025-12-15');
 
-export const MAX_ASSIGNMENTS = 1;
+export const MAX_ASSIGNMENTS = 2;
 
 export const MAX_MATCH_AFTER_TRAINING_MINUTES = 45;
 export const MIN_MATCH_BEFORE_TRAINING_MINUTES = 1440;
