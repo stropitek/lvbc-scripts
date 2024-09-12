@@ -2,23 +2,17 @@ import assert from 'assert';
 import process from 'process';
 
 import { loadVBManagerMatches } from '../../core/matches.mjs';
-import { getScorerFullName } from '../../core/scorers.mjs';
 import { translateLeagueToClubdesk } from '../../utils/clubdesk.mjs';
-import {
-  DATE,
-  CLUBDESK_LEAGUE,
-  MATCH_ID,
-  SCORER_TEAM,
-  TEAM_AWAY,
-  TEAM_HOME,
-  SCORER_ID,
-} from '../../utils/constants.mjs';
-import { dateToString, isSameDay } from '../../utils/date.mjs';
+import { DATE, CLUBDESK_LEAGUE, LOCATION } from '../../utils/constants.mjs';
+import { isSameDay } from '../../utils/date.mjs';
 
 import {
   MAX_MATCH_AFTER_TRAINING_MINUTES,
   MIN_MATCH_BEFORE_TRAINING_MINUTES,
   trainingSchedule,
+  TRAINING_CONFLICT_SCORE,
+  BASELINE_SCORE,
+  POSITIVE_MATCH_CONFLICT_SCORE,
 } from './params.mjs';
 
 const hourRegex = /^\d{2}:\d{2}$/;
@@ -42,79 +36,30 @@ export function assertTrainingSchedule() {
 
 const VBMMatches = await loadVBManagerMatches();
 
-export function logMatchDateChange(originalAndNew) {
-  const list = originalAndNew.map(({ newMatch, match }) => {
-    return {
-      'Match ID': match[MATCH_ID],
-      'Home team': match[TEAM_HOME],
-      'Away team': match[TEAM_AWAY],
-      'Original date': dateToString(match[DATE]),
-      'New date': dateToString(newMatch[DATE]),
-    };
-  });
-  console.table(list);
-}
-
-export function logMatches(matches, options = {}) {
-  const simplified = matches.map((match) => {
-    const list = {
-      Day: match[DATE].getDay(),
-      Date: match[DATE],
-      'Home team': match[TEAM_HOME],
-      'Away team': match[TEAM_AWAY],
-      Scorer: getScorerFullName(match[SCORER_ID]),
-    };
-    if (options.homeTeam) {
-      list['Home team'] = match[TEAM_HOME];
-    }
-    if (options.awayTeam) {
-      list['Away team'] = match[TEAM_AWAY];
-    }
-    return list;
-  });
-  console.table(simplified);
-}
-
-export function logMatchConflicts(conflicts) {
-  const simplified = conflicts.map(([original, conflicting]) => {
-    return {
-      Day: original[DATE].getDay(),
-      Date: original[DATE],
-      'Scorer team': original[SCORER_TEAM],
-      'Home team 1':
-        original[TEAM_HOME] === original[SCORER_TEAM]
-          ? 'scorer'
-          : original[TEAM_HOME],
-      'Away team 1':
-        original[TEAM_AWAY] === original[SCORER_TEAM]
-          ? 'scorer'
-          : original[TEAM_AWAY],
-      Conflicting: conflicting[DATE],
-      'Home team 2':
-        conflicting[TEAM_HOME] === original[SCORER_TEAM]
-          ? 'scorer'
-          : conflicting[TEAM_HOME],
-      'Away team 2':
-        conflicting[TEAM_AWAY] === original[SCORER_TEAM]
-          ? 'scorer'
-          : conflicting[TEAM_AWAY],
-    };
-  });
-  console.table(simplified);
-}
-
-export function hasConflict(match, scorer) {
-  const conflictingMatch = findConflict(match, scorer);
-  return conflictingMatch !== undefined;
-}
-
-export function findConflict(match, scorer) {
+function findSameDayMatch(match, scorer) {
   const league = scorer[CLUBDESK_LEAGUE];
   return VBMMatches.filter(
     (match) => translateLeagueToClubdesk(match) === league,
   ).find((teamMatch) => {
     return isSameDay(teamMatch[DATE], match[DATE]);
   });
+}
+
+export function hasConflict(match, scorer) {
+  const sameDayMatch = findSameDayMatch(match, scorer);
+  return sameDayMatch
+    ? getMatchConflictScore(sameDayMatch, match) === 0
+    : false;
+}
+
+export function findConflict(match, scorer) {
+  const sameDayMatch = findSameDayMatch(match, scorer);
+  if (sameDayMatch) {
+    return getMatchConflictScore(sameDayMatch, match) === 0
+      ? sameDayMatch
+      : undefined;
+  }
+  return undefined;
 }
 
 export function hasTraining(match, team) {
@@ -159,20 +104,49 @@ export function hasTraining(match, team) {
   return false;
 }
 
-export function canScoreMatch(scorer, match) {
+function getMatchConflictScore(match1, match2) {
+  assert(isSameDay(match1[DATE], match2[DATE]));
+  return match1[LOCATION] === match2[LOCATION]
+    ? {
+        score: POSITIVE_MATCH_CONFLICT_SCORE,
+        reason: 'Ideal: match and score the same day',
+      }
+    : {
+        score: 0,
+        reason: 'Hard conflict: Has a match at the same time',
+      };
+}
+
+// Returns
+// 0 if not available to score
+// A higher score for the most favorable availability
+export function getAvailabilityScore(scorer, match) {
+  const scores = [];
   const league = translateLeagueToClubdesk(match);
   const scorerLeague = scorer[CLUBDESK_LEAGUE];
 
   if (league === scorerLeague) {
-    return false;
+    // Cannot play and score the same match
+    scores.push({
+      score: 0,
+      reason: 'Hard conflict: Cannot play and score the same match',
+    });
   }
 
-  if (hasTraining(match, scorerLeague)) {
-    return false;
+  if (hasTraining(match, scorer[CLUBDESK_LEAGUE])) {
+    scores.push({
+      score: TRAINING_CONFLICT_SCORE,
+      reason: 'Soft conflict: Training',
+    });
   }
 
-  if (hasConflict(match, scorer)) {
-    return false;
+  const conflictingMatch = findSameDayMatch(match, scorer);
+  if (conflictingMatch) {
+    scores.push(getMatchConflictScore(match, conflictingMatch));
   }
-  return true;
+
+  scores.sort((score1, score2) => score1.score - score2.score);
+  return scores.length === 0
+    ? { score: BASELINE_SCORE, reason: 'Regular: no conflict' }
+    : scores[0];
 }

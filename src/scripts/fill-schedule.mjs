@@ -11,7 +11,10 @@ import {
 } from '../utils/constants.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
 
-import { canScoreMatch, assertTrainingSchedule } from './2024/checks.mjs';
+import {
+  assertTrainingSchedule,
+  getAvailabilityScore,
+} from './2024/checks.mjs';
 import {
   assignedFile,
   ASSIGNMENT_CUTOFF,
@@ -28,32 +31,34 @@ let assignedCount = 0;
 let alreadyAssignedCount = 0;
 let total = assignedMatches.length;
 let noCandidatesCount = 0;
-mainLoop: for (let match of assignedMatches) {
-  if (isAfterCutoff(match)) {
+for (let matchToScore of assignedMatches) {
+  if (isAfterCutoff(matchToScore)) {
     afterCutOffCount++;
     continue;
   }
-  if (isAssigned(match)) {
+  if (isAssigned(matchToScore)) {
     alreadyAssignedCount++;
     continue;
   }
-  const candidates = getCandidates(assignedMatches);
+  const candidates = getCandidates(assignedMatches, matchToScore);
 
-  if (candidates.length === 0) {
+  const bestCandidate = candidates[0];
+  if (!bestCandidate) {
+    // No more candidates left
     noCandidatesCount++;
     continue;
   }
-  for (let candidate of candidates) {
-    if (canScoreMatch(candidate, match)) {
-      match[SCORER_ID] = candidate[CLUBDESK_UID];
-      match[SCORER_1] = getScorerFullName(candidate);
-      match[SCORER_PHONE_1] = candidate[CLUBDESK_PHONE];
-      assignedCount++;
-      continue mainLoop;
-    }
+
+  const availability = getAvailabilityScore(bestCandidate, matchToScore);
+  if (availability.score === 0) {
+    conflictCount++;
+    console.log(`No candidate found for match ${matchToScore[MATCH_ID]}`);
+  } else {
+    matchToScore[SCORER_ID] = bestCandidate[CLUBDESK_UID];
+    matchToScore[SCORER_1] = getScorerFullName(bestCandidate);
+    matchToScore[SCORER_PHONE_1] = bestCandidate[CLUBDESK_PHONE];
+    assignedCount++;
   }
-  conflictCount++;
-  console.log(`No candidate found for match ${match[MATCH_ID]}`);
 }
 
 await writeXlsx(assignedMatches, assignedFile);

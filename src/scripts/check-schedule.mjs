@@ -11,13 +11,16 @@ import {
   SCORER_ID,
 } from '../utils/constants.mjs';
 import { isApproximatelySameDate } from '../utils/date.mjs';
-
 import {
-  findConflict,
-  hasTraining,
   logMatchConflicts,
   logMatchDateChange,
   logMatches,
+} from '../utils/log.mjs';
+
+import {
+  findConflict,
+  getAvailabilityScore,
+  hasTraining,
 } from './2024/checks.mjs';
 import { tunedFile, tunedFileExternal } from './2024/params.mjs';
 
@@ -31,16 +34,19 @@ const args = parseArgs({
       type: 'boolean',
       short: 'v',
     },
+    scores: {
+      type: 'boolean',
+      short: 's',
+    },
   },
 });
 
 const allMatches = await loadVBManagerMatches();
 const scorers = await loadClubdeskPlayers();
 
-const scoredMatches = await loadMatches(
-  args.values.external ? tunedFileExternal : tunedFile,
-);
-console.log(`loaded ${scoredMatches.length} matches`);
+const file = args.values.external ? tunedFileExternal : tunedFile;
+const scoredMatches = await loadMatches(file);
+console.log(`loaded ${scoredMatches.length} matches from ${file}`);
 
 const conflicts = [];
 let notAssigned = [];
@@ -66,6 +72,7 @@ for (let match of scoredMatches) {
       invalidScorer.push(match);
       continue;
     }
+    match.availability = getAvailabilityScore(scorer, match);
     const conflictedMatch = findConflict(match, scorer);
     if (conflictedMatch) {
       conflicts.push([match, conflictedMatch]);
@@ -107,4 +114,8 @@ if (invalidScorer.length > 0) {
   if (args.values.verbose) {
     logMatches(invalidScorer);
   }
+}
+
+if (args.values.scores) {
+  logMatches(scoredMatches, { availabilityScore: true });
 }

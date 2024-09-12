@@ -1,5 +1,6 @@
 import { groupBy } from 'lodash-es';
 
+import { getAvailabilityScore } from '../scripts/2024/checks.mjs';
 import {
   clubdeskPlayersFile,
   MAX_ASSIGNMENTS,
@@ -22,7 +23,7 @@ export function loadClubdeskPlayers() {
   return loadCSV(clubdeskPlayersFile);
 }
 
-export function getCandidates(assignedMatches) {
+export function getCandidates(assignedMatches, matchToScore) {
   const matchByScorer = groupBy(assignedMatches, SCORER_ID);
   delete matchByScorer.undefined;
   delete matchByScorer[''];
@@ -31,6 +32,13 @@ export function getCandidates(assignedMatches) {
       (matchByScorer[candidate[CLUBDESK_UID]]?.length ?? 0) < MAX_ASSIGNMENTS
     );
   });
+
+  candidates.sort((scorer1, scorer2) => {
+    const score1 = getAvailabilityScore(scorer1, matchToScore).score;
+    const score2 = getAvailabilityScore(scorer2, matchToScore).score;
+    return score2 - score1;
+  });
+
   candidates.sort(
     (scorer1, scorer2) =>
       (matchByScorer[scorer1[CLUBDESK_UID]]?.length ?? 0) -

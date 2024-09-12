@@ -1,6 +1,7 @@
 import {
   CLUBDESK_BIRTH_YEAR,
   CLUBDESK_LEAGUE,
+  CLUBDESK_UID,
   minScorerAge,
 } from '../utils/constants.mjs';
 import { loadCSV, writeCSV } from '../utils/csv.mjs';
@@ -13,7 +14,12 @@ try {
     delimiter: ';',
   });
 
-  const players = result.filter((row) => {
+  const playerSet = new Set(result.map((r) => r[CLUBDESK_UID]));
+  const uniquePlayers = Array.from(playerSet).map((uid) => {
+    return result.find((row) => row[CLUBDESK_UID] === uid);
+  });
+
+  const players = uniquePlayers.filter((row) => {
     const age = year - Number(row[CLUBDESK_BIRTH_YEAR]);
     return (
       row.Marqueur === 'Marqueur' &&
@@ -21,6 +27,7 @@ try {
       age >= minScorerAge
     );
   });
+
   await writeCSV(players, playersFile);
 } catch (err) {
   console.error('error', err);
