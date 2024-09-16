@@ -1,27 +1,27 @@
+import process from 'process';
+
 import { groupBy } from 'lodash-es';
 
 import { getAvailabilityScore } from '../scripts/2024/checks.mjs';
 import {
   clubdeskPlayersFile,
   MAX_ASSIGNMENTS,
-  playersFile,
+  year,
 } from '../scripts/2024/params.mjs';
 import {
+  CLUBDESK_BIRTH_YEAR,
   CLUBDESK_FIRST_NAME,
   CLUBDESK_LAST_NAME,
   CLUBDESK_LEAGUE,
   CLUBDESK_UID,
+  minScorerAge,
   SCORER_ID,
 } from '../utils/constants.mjs';
-import { loadCSV } from '../utils/csv.mjs';
+import { loadCSV, writeCSV } from '../utils/csv.mjs';
+import { debugFile } from '../utils/debug.mjs';
 
-const allScorers = await loadCSV(playersFile);
-const shuffledScorers = allScorers.slice().sort(() => Math.random() - 0.5);
-const clubdeskPlayers = await loadClubdeskPlayers();
-
-export function loadClubdeskPlayers() {
-  return loadCSV(clubdeskPlayersFile);
-}
+const clubdeskScorers = await loadClubdeskScorers();
+const shuffledScorers = clubdeskScorers.slice().sort(() => Math.random() - 0.5);
 
 export function getCandidates(assignedMatches, matchToScore) {
   const matchByScorer = groupBy(assignedMatches, SCORER_ID);
@@ -91,9 +91,36 @@ function createPairsBy3(scorers) {
 export function getScorerFullName(scorer) {
   let scorerData = scorer;
   if (typeof scorer === 'string') {
-    scorerData = clubdeskPlayers.find(
+    scorerData = clubdeskScorers.find(
       (player) => player[CLUBDESK_UID] === scorer,
     );
   }
   return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]} (${scorerData[CLUBDESK_LEAGUE]})`;
+}
+
+export async function loadClubdeskScorers() {
+  try {
+    const result = await loadCSV(clubdeskPlayersFile);
+
+    const playerSet = new Set(result.map((r) => r[CLUBDESK_UID]));
+    const uniquePlayers = Array.from(playerSet).map((uid) => {
+      return result.find((row) => row[CLUBDESK_UID] === uid);
+    });
+
+    const players = uniquePlayers.filter((row) => {
+      const age = year - Number(row[CLUBDESK_BIRTH_YEAR]);
+      return (
+        row.Marqueur === 'Marqueur' &&
+        row[CLUBDESK_LEAGUE] !== 'Arbitre' &&
+        age >= minScorerAge
+      );
+    });
+
+    if (process.env.DEBUG) {
+      await writeCSV(players, await debugFile('clubdesk-scorers.csv'));
+    }
+    return players;
+  } catch (err) {
+    console.error('error', err);
+  }
 }

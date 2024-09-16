@@ -1,8 +1,6 @@
 export const year = 2024;
 
 export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
-// ↓↓↓ init-scorers.mjs - Same fields as clubdesk file but filtered
-export const playersFile = 'files/24/output/players.csv';
 
 // VB file such as downloaded from VB Manager. Don't touch it!
 export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';

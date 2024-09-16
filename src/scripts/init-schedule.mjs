@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 
 import { filterHomeMatches, loadMatches } from '../core/matches.mjs';
+import { loadClubdeskScorers } from '../core/scorers.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
   CLUBDESK_LEAGUE,
@@ -10,14 +11,9 @@ import {
   SCORER_PHONE_1,
   SCORER_PHONE_2,
 } from '../utils/constants.mjs';
-import { loadCSV } from '../utils/csv.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
 
-import {
-  VBManagerInputFile,
-  playersFile,
-  preassignedFile,
-} from './2024/params.mjs';
+import { VBManagerInputFile, preassignedFile } from './2024/params.mjs';
 
 try {
   await fs.access(preassignedFile);
@@ -33,10 +29,10 @@ try {
   homeMatches[0][SCORER_2] = '';
   homeMatches[0][SCORER_PHONE_2] = '';
 
-  // Check that matches and players have the same league names
-  const players = await loadCSV(playersFile);
+  // Check that matches and scorers have the same league names
+  const scorers = await loadClubdeskScorers();
   const matchTeams = new Set(homeMatches.map(translateLeagueToClubdesk));
-  const playerTeams = new Set(players.map((player) => player[CLUBDESK_LEAGUE]));
+  const playerTeams = new Set(scorers.map((scorer) => scorer[CLUBDESK_LEAGUE]));
   if (matchTeams.has(undefined) || playerTeams.has(undefined)) {
     throw new Error('Some matches or players have no league');
   }

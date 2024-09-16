@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { parseArgs } from 'node:util';
 
 import { loadMatches, loadVBManagerMatches } from '../core/matches.mjs';
-import { loadClubdeskPlayers } from '../core/scorers.mjs';
+import { loadClubdeskScorers } from '../core/scorers.mjs';
 import {
   CLUBDESK_LEAGUE,
   CLUBDESK_UID,
@@ -42,7 +42,7 @@ const args = parseArgs({
 });
 
 const allMatches = await loadVBManagerMatches();
-const scorers = await loadClubdeskPlayers();
+const scorers = await loadClubdeskScorers();
 
 const file = args.values.external ? tunedFileExternal : tunedFile;
 const scoredMatches = await loadMatches(file);
