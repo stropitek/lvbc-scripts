@@ -9,6 +9,7 @@ import {
   SCORER_ID,
   CLUBDESK_UID,
   DATE,
+  PUBLIC_MATCH_FIELDS,
 } from '../utils/constants.mjs';
 import { enquireAssignmentSheet } from '../utils/enquirer.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
@@ -59,7 +60,12 @@ for (let matchToScore of assignedMatches) {
   }
 }
 
-await writeXlsx(assignedMatches, assignedFile);
+await writeXlsx(
+  assignedMatches,
+  assignedFile,
+  'Marquages',
+  PUBLIC_MATCH_FIELDS,
+);
 
 console.log(
   chalk.blue(`

@@ -1,6 +1,5 @@
 // Name of match headers in VB manager excel file
 export const TEAM_HOME = 'Equipe recevante';
-export const RECEIVING_TEAM = 'Club recevant';
 export const TEAM_AWAY = 'Equipe visiteuse';
 export const DATE = 'Date/heure de début du match';
 export const DAY = 'Jour';
@@ -16,6 +15,20 @@ export const SCORER_1 = 'Marqueur 1';
 export const SCORER_2 = 'Marqueur 2';
 export const SCORER_PHONE_1 = 'Téléphone 1';
 export const SCORER_PHONE_2 = 'Téléphone 2';
+
+// Columns exported as the public assignment sheet
+export const PUBLIC_MATCH_FIELDS = [
+  MATCH_ID,
+  DATE,
+  TEAM_HOME,
+  TEAM_AWAY,
+  LOCATION,
+  SCORER_1,
+  SCORER_PHONE_1,
+  SCORER_2,
+  SCORER_PHONE_2,
+  SCORER_ID,
+];
 
 // Name of headers in players csv file
 export const CLUBDESK_UID = '[Id]';

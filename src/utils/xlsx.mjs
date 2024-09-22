@@ -16,29 +16,20 @@ export async function loadXlsx(xlsxFile, sheetName) {
   return data;
 }
 
-export async function writeXlsx(
-  data,
-  xlsxFileName,
-  sheetName,
-  firstColumns = [],
-) {
+export async function writeXlsx(data, xlsxFileName, sheetName, columns) {
   await loadLib();
-  const orderedData = [];
+  const lines = [];
   for (let item of data) {
-    const orderedItem = {};
-    for (let column of firstColumns) {
-      orderedItem[column] = item[column];
+    const currentLine = {};
+    const keys = columns || Object.keys(item);
+    for (let column of keys) {
+      currentLine[column] = item[column];
     }
-    for (let column of Object.keys(item)) {
-      if (!firstColumns.includes(column)) {
-        orderedItem[column] = item[column];
-      }
-    }
-    orderedData.push(orderedItem);
+    lines.push(currentLine);
   }
 
   const book = xlsx.utils.book_new();
-  const WS = xlsx.utils.json_to_sheet(orderedData);
+  const WS = xlsx.utils.json_to_sheet(lines);
   xlsx.utils.book_append_sheet(book, WS, sheetName || 'Sheet1');
   await xlsx.writeFile(book, xlsxFileName);
   console.log(`wrote ${xlsxFileName}`);
