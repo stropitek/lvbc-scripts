@@ -1,7 +1,8 @@
 import xlsx from 'xlsx';
 
 export async function loadXlsx(xlsxFile, sheetName) {
-  const workbook = await xlsx.readFile(xlsxFile, {
+  await loadLib();
+  const workbook = await xlsx.readFileSync(xlsxFile, {
     cellDates: true,
   });
 
@@ -20,6 +21,7 @@ export async function writeXlsx(
   sheetName,
   firstColumns = [],
 ) {
+  await loadLib();
   const orderedData = [];
   for (let item of data) {
     const orderedItem = {};
@@ -39,4 +41,18 @@ export async function writeXlsx(
   xlsx.utils.book_append_sheet(book, WS, sheetName || 'Sheet1');
   await xlsx.writeFile(book, xlsxFileName);
   console.log(`wrote ${xlsxFileName}`);
+}
+
+async function loadLib() {
+  while (true) {
+    if (xlsx) return;
+    // eslint-disable-next-line no-await-in-loop
+    await wait(1);
+  }
+}
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }

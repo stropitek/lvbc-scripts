@@ -34,11 +34,14 @@ export function logMatchDateChange(originalAndNew) {
 export function logMatches(matches, options = {}) {
   const simplified = matches.map((match) => {
     const list = {
+      ID: match[MATCH_ID],
       Day: match[DATE].getDay(),
       Date: match[DATE],
       'Home team': match[TEAM_HOME],
       'Away team': match[TEAM_AWAY],
-      Scorer: getScorerFullName(match[SCORER_ID]),
+      Scorer: match[SCORER_ID]
+        ? getScorerFullName(match[SCORER_ID])
+        : undefined,
     };
     if (options.availabilityScore) {
       list['Availability score'] = match.availability.score;

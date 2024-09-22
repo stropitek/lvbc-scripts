@@ -1,3 +1,4 @@
+import assert from 'assert';
 import process from 'process';
 
 import { groupBy } from 'lodash-es';
@@ -89,12 +90,15 @@ function createPairsBy3(scorers) {
 }
 
 export function getScorerFullName(scorer) {
+  assert(scorer, 'scorer must be defined');
   let scorerData = scorer;
-  if (typeof scorer === 'string') {
+  if (typeof scorer === 'number') {
     scorerData = clubdeskScorers.find(
       (player) => player[CLUBDESK_UID] === scorer,
     );
+    assert(scorerData, 'Could not find scorer data');
   }
+
   return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]} (${scorerData[CLUBDESK_LEAGUE]})`;
 }
 

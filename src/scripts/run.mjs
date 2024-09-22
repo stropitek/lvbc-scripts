@@ -1,7 +1,8 @@
-import { loadMatches } from '../core/matches.mjs';
+import chalk from 'chalk';
+
+import { checkScoredMatches, loadScoredMatches } from '../core/matches.mjs';
 import { getCandidates, getScorerFullName } from '../core/scorers.mjs';
 import {
-  MATCH_ID,
   CLUBDESK_PHONE,
   SCORER_1,
   SCORER_PHONE_1,
@@ -9,21 +10,19 @@ import {
   CLUBDESK_UID,
   DATE,
 } from '../utils/constants.mjs';
+import { enquireAssignmentSheet } from '../utils/enquirer.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
 
 import {
   assertTrainingSchedule,
   getAvailabilityScore,
 } from './2024/checks.mjs';
-import {
-  assignedFile,
-  ASSIGNMENT_CUTOFF,
-  preassignedFile,
-} from './2024/params.mjs';
+import { assignedFile, ASSIGNMENT_CUTOFF } from './2024/params.mjs';
 
 assertTrainingSchedule();
+const file = await enquireAssignmentSheet();
 // Load all matches so that we can check if a player has a conflict
-const assignedMatches = await loadMatches(preassignedFile);
+const assignedMatches = await loadScoredMatches(file);
 
 let afterCutOffCount = 0;
 let conflictCount = 0;
@@ -52,7 +51,6 @@ for (let matchToScore of assignedMatches) {
   const availability = getAvailabilityScore(bestCandidate, matchToScore);
   if (availability.score === 0) {
     conflictCount++;
-    console.log(`No candidate found for match ${matchToScore[MATCH_ID]}`);
   } else {
     matchToScore[SCORER_ID] = bestCandidate[CLUBDESK_UID];
     matchToScore[SCORER_1] = getScorerFullName(bestCandidate);
@@ -63,14 +61,18 @@ for (let matchToScore of assignedMatches) {
 
 await writeXlsx(assignedMatches, assignedFile);
 
-console.log(`
+console.log(
+  chalk.blue(`
   Total:            ${total}
   Assigned:         ${assignedCount}
   Conflict:         ${conflictCount}
   No candidates:    ${noCandidatesCount}
   After cutoff:     ${afterCutOffCount}
   Already assigned: ${alreadyAssignedCount}
-  `);
+  `),
+);
+
+await checkScoredMatches(assignedMatches);
 
 function isAfterCutoff(match) {
   if (match[DATE] > ASSIGNMENT_CUTOFF) {

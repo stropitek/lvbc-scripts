@@ -1,7 +1,6 @@
 import assert from 'assert';
-import process from 'process';
 
-import { loadVBManagerMatches } from '../../core/matches.mjs';
+import { loadVbmMatches } from '../../core/matches.mjs';
 import { translateLeagueToClubdesk } from '../../utils/clubdesk.mjs';
 import { DATE, CLUBDESK_LEAGUE, LOCATION } from '../../utils/constants.mjs';
 import { isSameDay } from '../../utils/date.mjs';
@@ -34,7 +33,7 @@ export function assertTrainingSchedule() {
   }
 }
 
-const VBMMatches = await loadVBManagerMatches();
+const VBMMatches = await loadVbmMatches();
 
 function findSameDayMatch(match, scorer) {
   const league = scorer[CLUBDESK_LEAGUE];
@@ -93,9 +92,6 @@ export function hasTraining(match, team) {
         }
       } else {
         // Training conflict
-        if (process.env.DEBUG) {
-          console.log(`${team} has training on ${matchDay}`);
-        }
         return true;
       }
     }
