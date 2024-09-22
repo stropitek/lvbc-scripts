@@ -2,25 +2,13 @@ export const year = 2024;
 
 export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
 
-// VB file such as downloaded from VB Manager. Don't touch it!
+// VB file such as downloaded from VB Manager.
+// Tweaked to merge together junior matches scored as one match.
+// !!! DO NOT REDOWNLOAD FROM VB MANAGER
 export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';
-// ↓↓↓ init-schedule.mjs - Filtered and sorted. Only home matches kept. Additional columns for scorer added.
-export const preassignedFile = 'files/24/input/pre-assigned.xlsx';
 
-// The preassigned file can now be tweaked
-// Usually:
-//   - Junior matches are merged together
-
-// ↓↓↓ fill-schedule.mjs - Scorers are assigned to matches.
+// ↓↓↓ run.mjs - Scorers are assigned to matches in a generated spreadsheet.
 export const assignedFile = 'files/24/output/assigned.xlsx';
-
-export const tunedFile = 'files/24/input/assigned-tuned.xlsx';
-// ↓↓↓ check-schedule.mjs - Analyses file and logs conflicts.
-// ↓↓↓ rewrite.mjs - From tuned file and VBManagerInputFile. Makes sure the ids and dates are correct.
-export const rewriteFileExternal = 'files/24/output/googlesheet-rewritten.xlsx';
-
-// ↓↓↓ Google sheet export
-export const tunedFileExternal = 'files/24/input/googlesheet.xlsx';
 
 export const SEASON_START = new Date('2024-09-01');
 
