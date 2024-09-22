@@ -14,10 +14,6 @@ export function logConflict(matchToAssign, otherMatch) {
   console.table({ matchToAssign, otherMatch });
 }
 
-export function printMatch(match) {
-  console.log(`${match[TEAM_HOME]} - ${match[TEAM_AWAY]} (${match[DATE]})`);
-}
-
 export function logMatchDateChange(originalAndNew) {
   const list = originalAndNew.map(({ newMatch, match }) => {
     return {

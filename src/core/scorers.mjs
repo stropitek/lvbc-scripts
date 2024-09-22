@@ -11,6 +11,7 @@ import {
 } from '../scripts/2024/params.mjs';
 import {
   CLUBDESK_BIRTH_YEAR,
+  CLUBDESK_FIELDS,
   CLUBDESK_FIRST_NAME,
   CLUBDESK_LAST_NAME,
   CLUBDESK_LEAGUE,
@@ -21,6 +22,7 @@ import {
 import { loadCSV, writeCSV } from '../utils/csv.mjs';
 import { debugFile } from '../utils/debug.mjs';
 
+const clubdeskPlayers = await loadClubdeskPlayers();
 const clubdeskScorers = await loadClubdeskScorers();
 const shuffledScorers = clubdeskScorers.slice().sort(() => Math.random() - 0.5);
 
@@ -93,25 +95,44 @@ export function getScorerFullName(scorer) {
   assert(scorer, 'scorer must be defined');
   let scorerData = scorer;
   if (typeof scorer === 'number') {
-    scorerData = clubdeskScorers.find(
+    scorerData = clubdeskPlayers.find(
       (player) => player[CLUBDESK_UID] === scorer,
     );
     assert(scorerData, 'Could not find scorer data');
+  } else if (typeof scorer === 'string') {
+    console.log({ scorer });
   }
 
   return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]} (${scorerData[CLUBDESK_LEAGUE]})`;
 }
 
+async function loadClubdeskPlayers() {
+  const result = await loadCSV(clubdeskPlayersFile);
+  const playerSet = new Set(result.map((r) => r[CLUBDESK_UID]));
+
+  const uniquePlayers = Array.from(playerSet).map((uid) => {
+    return result.find((row) => row[CLUBDESK_UID] === uid);
+  });
+
+  for (let player of uniquePlayers) {
+    const id = normalizeScorerId(player[CLUBDESK_UID]);
+    assert(id !== undefined, 'Expected ID column in clubdesk export');
+    player[CLUBDESK_UID] = id;
+    for (let field of CLUBDESK_FIELDS) {
+      assert(
+        player[field] !== undefined,
+        `Clubdesk export is missing field: ${field}`,
+      );
+    }
+  }
+  return uniquePlayers;
+}
+
 export async function loadClubdeskScorers() {
   try {
-    const result = await loadCSV(clubdeskPlayersFile);
+    const players = await loadClubdeskPlayers();
 
-    const playerSet = new Set(result.map((r) => r[CLUBDESK_UID]));
-    const uniquePlayers = Array.from(playerSet).map((uid) => {
-      return result.find((row) => row[CLUBDESK_UID] === uid);
-    });
-
-    const players = uniquePlayers.filter((row) => {
+    const scorers = players.filter((row) => {
       const age = year - Number(row[CLUBDESK_BIRTH_YEAR]);
       return (
         row.Marqueur === 'Marqueur' &&
@@ -121,10 +142,21 @@ export async function loadClubdeskScorers() {
     });
 
     if (process.env.DEBUG) {
-      await writeCSV(players, await debugFile('clubdesk-scorers.csv'));
+      await writeCSV(scorers, await debugFile('clubdesk-scorers.csv'));
     }
-    return players;
+    return scorers;
   } catch (err) {
     console.error('error', err);
   }
+}
+
+export function normalizeScorerId(scorerId) {
+  if (scorerId === undefined) {
+    return scorerId;
+  }
+  const id = Number(scorerId);
+  if (Number.isNaN(id) || !Number.isInteger(id)) {
+    throw new Error(`Invalid scorer ID: ${scorerId}`);
+  }
+  return id;
 }

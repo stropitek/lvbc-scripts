@@ -15,10 +15,14 @@ import {
   CLUBDESK_LEAGUE,
   CLUBDESK_UID,
   DATE,
+  GENDER,
+  LEAGUE,
   LOCATION,
   MATCH_ID,
   SCORER_ID,
   SCORER_TEAM,
+  TEAM_AWAY,
+  TEAM_HOME,
 } from '../utils/constants.mjs';
 import { isApproximatelySameDate } from '../utils/date.mjs';
 import { debugFile } from '../utils/debug.mjs';
@@ -29,8 +33,7 @@ import {
 } from '../utils/log.mjs';
 import { loadXlsx, writeXlsx } from '../utils/xlsx.mjs';
 
-import { loadClubdeskScorers } from './scorers.mjs';
-import { getTeams, isLausanneTeam } from './teams.mjs';
+import { loadClubdeskScorers, normalizeScorerId } from './scorers.mjs';
 
 export async function loadVbmMatches() {
   return loadMatches(VBManagerInputFile);
@@ -47,30 +50,6 @@ function filterAndSortMatches(matches) {
     .filter((line) => line)
     .filter((line) => line[DATE].getTime() > SEASON_START)
     .sort((line1, line2) => line1[DATE].getTime() - line2[DATE].getTime());
-}
-
-export function initMatchTeamAssignments(allMatches) {
-  const teams = getTeams(allMatches);
-  const lausanneTeams = teams.filter(isLausanneTeam);
-
-  const assignedMatchesPerTeam = {};
-  for (let team of lausanneTeams) {
-    assignedMatchesPerTeam[team] = [];
-  }
-
-  for (let match of allMatches) {
-    const scorer = match[SCORER_TEAM];
-    if (scorer) {
-      assert(
-        lausanneTeams.includes(scorer),
-        `${scorer} is not a Lausanne team`,
-      );
-      assignedMatchesPerTeam[match[SCORER_TEAM]].push(match);
-    } else {
-      throw new Error(`no scorer team for match ${match[MATCH_ID]}`);
-    }
-  }
-  return assignedMatchesPerTeam;
 }
 
 function filterHomeMatches(allMatches) {
@@ -91,10 +70,29 @@ export async function loadScoredMatches(file) {
   const teamWhichCanBeWithoutScorer = new Set(['M18G']);
   // File does not exist, continue
 
+  const vbmMatches = await loadVbmMatches();
   let matches = await loadMatches(file);
   if (file === VBManagerInputFile) {
     matches = filterHomeMatches(matches);
   }
+
+  matches = matches.map((match) => {
+    const vbm = vbmMatches.find((vbm) => vbm[MATCH_ID] === match[MATCH_ID]);
+    assert(vbm, `Cannot find match ${match[MATCH_ID]} in VBManager file`);
+    if (match[DATE].getTime() !== vbm[DATE].getTime()) {
+      logMatches([match, vbm]);
+      throw new Error('Date mismatch between scored sheet and VBM sheet');
+    }
+    // Make sure mandatory fields are present
+    match[SCORER_TEAM] = vbm[SCORER_TEAM];
+    match[TEAM_HOME] = vbm[TEAM_HOME];
+    match[TEAM_AWAY] = vbm[TEAM_AWAY];
+    match[LOCATION] = vbm[LOCATION];
+    match[LEAGUE] = vbm[LEAGUE];
+    match[GENDER] = vbm[GENDER];
+    match[SCORER_ID] = normalizeScorerId(match[SCORER_ID]);
+    return match;
+  });
 
   // Check that matches and scorers have the same league names
   const scorers = await loadClubdeskScorers();

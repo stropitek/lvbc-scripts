@@ -8,6 +8,7 @@ export async function loadXlsx(xlsxFile, sheetName) {
 
   if (!sheetName) {
     sheetName = workbook.SheetNames[0];
+    console.log('No sheet name provided, using first sheet:', sheetName);
   }
   const sheet = workbook.Sheets[sheetName];
 

@@ -6,8 +6,8 @@ import { VBManagerInputFile } from '../scripts/2024/params.mjs';
 
 const dir = 'files/external';
 
-const externalSheets = (await fs.readdir(dir)).filter((file) =>
-  file.endsWith('.xlsx'),
+const externalSheets = (await fs.readdir(dir)).filter(
+  (file) => file.endsWith('.xlsx') && !file.startsWith('~'),
 );
 
 const matchesFileOptions = [
