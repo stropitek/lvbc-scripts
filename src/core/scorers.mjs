@@ -99,8 +99,6 @@ export function getScorerFullName(scorer) {
       (player) => player[CLUBDESK_UID] === scorer,
     );
     assert(scorerData, 'Could not find scorer data');
-  } else if (typeof scorer === 'string') {
-    console.log({ scorer });
   }
 
   return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]} (${scorerData[CLUBDESK_LEAGUE]})`;

@@ -20,6 +20,16 @@ const selectPrompt = new enquirer.Select({
   choices: matchesFileOptions,
 });
 
+const runPrompt = new enquirer.Select({
+  name: 'Run task',
+  message: 'What would you like to do with this sheet?',
+  choices: ['Assign', 'Check'],
+});
+
 export function enquireAssignmentSheet() {
   return selectPrompt.run();
+}
+
+export function enquireRunTask() {
+  return runPrompt.run();
 }
