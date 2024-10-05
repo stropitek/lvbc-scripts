@@ -50,7 +50,7 @@ export const trainingSchedule = {
   ],
 };
 
-export const ASSIGNMENT_CUTOFF = new Date('2025-03-01');
+export const ASSIGNMENT_CUTOFF = new Date('2025-06-01');
 
 export const MAX_ASSIGNMENTS = 2;
 

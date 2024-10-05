@@ -36,7 +36,7 @@ export function logMatches(matches, options = {}) {
       'Home team': match[TEAM_HOME],
       'Away team': match[TEAM_AWAY],
       Scorer: match[SCORER_ID]
-        ? getScorerFullName(match[SCORER_ID])
+        ? `${match[SCORER_ID]} - ${getScorerFullName(match[SCORER_ID])}`
         : undefined,
     };
 

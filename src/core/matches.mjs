@@ -125,10 +125,6 @@ export async function loadScoredMatches(file) {
 export async function checkScoredMatches(scoredMatches) {
   const args = parseArgs({
     options: {
-      verbose: {
-        type: 'boolean',
-        short: 'v',
-      },
       scores: {
         type: 'boolean',
         short: 's',
@@ -203,17 +199,13 @@ export async function checkScoredMatches(scoredMatches) {
   }
   if (conflicts.length > 0) {
     console.error(chalk.red(`There are ${conflicts.length} match conflicts`));
-    if (args.values.verbose) {
-      logMatchConflicts(conflicts);
-    }
+    logMatchConflicts(conflicts);
   } else {
     console.log(chalk.green('No match conflicts.'));
   }
   if (training.length > 0) {
     console.error(chalk.red(`There are ${training.length} training conflicts`));
-    if (args.values.verbose) {
-      logMatches(training);
-    }
+    logMatches(training);
   } else {
     console.log(chalk.green('No training conflicts.'));
   }
@@ -222,9 +214,7 @@ export async function checkScoredMatches(scoredMatches) {
     console.error(
       `There are ${invalidScorer.length} matches with invalid scorer`,
     );
-    if (args.values.verbose) {
-      logMatches(invalidScorer);
-    }
+    logMatches(invalidScorer);
   } else {
     console.log(chalk.green('No invalid scorers.'));
   }

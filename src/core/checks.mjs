@@ -155,7 +155,6 @@ export function getAvailabilityScore(scorer, match) {
 }
 
 export function getNameMismatchError(match) {
-  console.log(match);
   if (match[SCORER_ID]) {
     const scorerName = getScorerFullName(match[SCORER_ID], {
       omitLeague: true,
@@ -163,7 +162,7 @@ export function getNameMismatchError(match) {
     if (!match[SCORER_1]) {
       return 'UID present but name missing';
     }
-    if (scorerName.startsWith(match[SCORER_1])) {
+    if (!match[SCORER_1].toLowerCase().startsWith(scorerName.toLowerCase())) {
       return `Name mismatch, expected ${scorerName}, got ${match[SCORER_1]}`;
     }
   } else if (match[SCORER_1]) {
