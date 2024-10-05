@@ -3,7 +3,6 @@ import process from 'process';
 
 import { groupBy } from 'lodash-es';
 
-import { getAvailabilityScore } from '../scripts/2024/checks.mjs';
 import {
   clubdeskPlayersFile,
   MAX_ASSIGNMENTS,
@@ -21,6 +20,8 @@ import {
 } from '../utils/constants.mjs';
 import { loadCSV, writeCSV } from '../utils/csv.mjs';
 import { debugFile } from '../utils/debug.mjs';
+
+import { getAvailabilityScore } from './checks.mjs';
 
 const clubdeskPlayers = await loadClubdeskPlayers();
 const clubdeskScorers = await loadClubdeskScorers();
@@ -99,7 +100,7 @@ function createPairsBy3(scorers) {
   return pairs;
 }
 
-export function getScorerFullName(scorer) {
+export function getScorerFullName(scorer, { omitLeague } = {}) {
   assert(scorer, 'scorer must be defined');
   let scorerData = scorer;
   if (typeof scorer === 'number') {
@@ -109,7 +110,7 @@ export function getScorerFullName(scorer) {
     assert(scorerData, 'Could not find scorer data');
   }
 
-  return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]} (${scorerData[CLUBDESK_LEAGUE]})`;
+  return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}${omitLeague ? '' : ` (${scorerData[CLUBDESK_LEAGUE]})`}`;
 }
 
 async function loadClubdeskPlayers() {

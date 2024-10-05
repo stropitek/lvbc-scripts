@@ -1,10 +1,5 @@
 import assert from 'assert';
 
-import { loadVbmMatches } from '../../core/matches.mjs';
-import { translateLeagueToClubdesk } from '../../utils/clubdesk.mjs';
-import { DATE, CLUBDESK_LEAGUE, LOCATION } from '../../utils/constants.mjs';
-import { isSameDay } from '../../utils/date.mjs';
-
 import {
   MAX_MATCH_AFTER_TRAINING_MINUTES,
   MIN_MATCH_BEFORE_TRAINING_MINUTES,
@@ -12,7 +7,19 @@ import {
   TRAINING_CONFLICT_SCORE,
   BASELINE_SCORE,
   POSITIVE_MATCH_CONFLICT_SCORE,
-} from './params.mjs';
+} from '../scripts/2024/params.mjs';
+import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
+import {
+  DATE,
+  CLUBDESK_LEAGUE,
+  LOCATION,
+  SCORER_1,
+  SCORER_ID,
+} from '../utils/constants.mjs';
+import { isSameDay } from '../utils/date.mjs';
+
+import { loadVbmMatches } from './matches.mjs';
+import { getScorerFullName } from './scorers.mjs';
 
 const hourRegex = /^\d{2}:\d{2}$/;
 
@@ -145,4 +152,22 @@ export function getAvailabilityScore(scorer, match) {
   return scores.length === 0
     ? { score: BASELINE_SCORE, reason: 'Regular: no conflict' }
     : scores[0];
+}
+
+export function getNameMismatchError(match) {
+  console.log(match);
+  if (match[SCORER_ID]) {
+    const scorerName = getScorerFullName(match[SCORER_ID], {
+      omitLeague: true,
+    });
+    if (!match[SCORER_1]) {
+      return 'UID present but name missing';
+    }
+    if (scorerName.startsWith(match[SCORER_1])) {
+      return `Name mismatch, expected ${scorerName}, got ${match[SCORER_1]}`;
+    }
+  } else if (match[SCORER_1]) {
+    return 'Name present but no UID';
+  }
+  return null;
 }

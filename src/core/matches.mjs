@@ -4,11 +4,6 @@ import { parseArgs } from 'node:util';
 
 import chalk from 'chalk';
 
-import {
-  findConflict,
-  getAvailabilityScore,
-  hasTraining,
-} from '../scripts/2024/checks.mjs';
 import { SEASON_START, VBManagerInputFile } from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
@@ -32,6 +27,12 @@ import {
 } from '../utils/log.mjs';
 import { loadXlsx, writeXlsx } from '../utils/xlsx.mjs';
 
+import {
+  findConflict,
+  getAvailabilityScore,
+  getNameMismatchError,
+  hasTraining,
+} from './checks.mjs';
 import { loadClubdeskScorers, normalizeScorerId } from './scorers.mjs';
 
 export async function loadVbmMatches() {
@@ -80,6 +81,8 @@ export async function loadScoredMatches(file) {
     matches = filterHomeMatches(matches);
   }
 
+  const scorers = await loadClubdeskScorers();
+
   matches = matches.map((match) => {
     const vbm = vbmMatches.find((vbm) => vbm[MATCH_ID] === match[MATCH_ID]);
     assert(vbm, `Cannot find match ${match[MATCH_ID]} in VBManager file`);
@@ -87,6 +90,7 @@ export async function loadScoredMatches(file) {
       logMatches([match, vbm]);
       throw new Error('Date mismatch between scored sheet and VBM sheet');
     }
+
     // Make sure mandatory fields are present
     match[TEAM_HOME] = vbm[TEAM_HOME];
     match[TEAM_AWAY] = vbm[TEAM_AWAY];
@@ -94,11 +98,11 @@ export async function loadScoredMatches(file) {
     match[LEAGUE] = vbm[LEAGUE];
     match[GENDER] = vbm[GENDER];
     match[SCORER_ID] = normalizeScorerId(match[SCORER_ID]);
+
     return match;
   });
 
   // Check that matches and scorers have the same league names
-  const scorers = await loadClubdeskScorers();
   const matchTeams = new Set(matches.map(translateLeagueToClubdesk));
   const playerTeams = new Set(scorers.map((scorer) => scorer[CLUBDESK_LEAGUE]));
   if (matchTeams.has(undefined) || playerTeams.has(undefined)) {
@@ -140,6 +144,7 @@ export async function checkScoredMatches(scoredMatches) {
   let training = [];
   let changed = [];
   let invalidScorer = [];
+  let nameMismatch = [];
 
   for (let match of scoredMatches) {
     const newMatch = allMatches.find(
@@ -148,6 +153,12 @@ export async function checkScoredMatches(scoredMatches) {
     assert(newMatch, `Cannot find match ${match.id} in VBManager file`);
     if (!isApproximatelySameDate(newMatch[DATE], match[DATE])) {
       changed.push({ match, newMatch });
+    }
+
+    const nameError = getNameMismatchError(match);
+    if (nameError) {
+      match.error = nameError;
+      nameMismatch.push(match);
     }
 
     const scorerID = match[SCORER_ID];
@@ -218,6 +229,12 @@ export async function checkScoredMatches(scoredMatches) {
     console.log(chalk.green('No invalid scorers.'));
   }
 
+  if (nameMismatch.length > 0) {
+    console.error(
+      chalk.red(`There are ${nameMismatch.length} name vs UID mismatches`),
+    );
+    logMatches(nameMismatch, { error: true });
+  }
   if (args.values.scores) {
     logMatches(scoredMatches, { availabilityScore: true });
   }

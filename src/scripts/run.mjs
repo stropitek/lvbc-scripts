@@ -1,4 +1,5 @@
 import { assignScorers } from '../core/assign.mjs';
+import { assertTrainingSchedule } from '../core/checks.mjs';
 import { checkScoredMatches, loadScoredMatches } from '../core/matches.mjs';
 import { logUnassignedScorers } from '../core/unassigned.mjs';
 import {
@@ -7,8 +8,6 @@ import {
   TASK_UNASSIGNED,
 } from '../utils/constants.mjs';
 import { enquireAssignmentSheet, enquireRunTask } from '../utils/enquirer.mjs';
-
-import { assertTrainingSchedule } from './2024/checks.mjs';
 
 assertTrainingSchedule();
 const file = await enquireAssignmentSheet();

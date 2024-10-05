@@ -39,6 +39,7 @@ export function logMatches(matches, options = {}) {
         ? getScorerFullName(match[SCORER_ID])
         : undefined,
     };
+
     if (options.availabilityScore) {
       list['Availability score'] = match.availability.score;
       list['Availability reason'] = match.availability.reason;
@@ -51,6 +52,9 @@ export function logMatches(matches, options = {}) {
     }
     if (options.matchId) {
       list['Match ID'] = match[MATCH_ID];
+    }
+    if (options.error) {
+      list.error = match.error;
     }
     return list;
   });

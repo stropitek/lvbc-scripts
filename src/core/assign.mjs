@@ -2,7 +2,7 @@ import process from 'process';
 
 import chalk from 'chalk';
 
-import { getAvailabilityScore } from '../scripts/2024/checks.mjs';
+import { getAvailabilityScore } from './checks.mjs';
 import { assignedFile, ASSIGNMENT_CUTOFF } from '../scripts/2024/params.mjs';
 import {
   CLUBDESK_PHONE,
