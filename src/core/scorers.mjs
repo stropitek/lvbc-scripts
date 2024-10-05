@@ -167,3 +167,16 @@ export function normalizeScorerId(scorerId) {
   }
   return id;
 }
+
+export function addScorerStats(scorers, assignedMatches) {
+  const matchByScorer = groupBy(assignedMatches, SCORER_ID);
+  for (let scorer of scorers) {
+    scorer.numScoredMatches = matchByScorer[scorer[CLUBDESK_UID]]?.length ?? 0;
+  }
+}
+
+export function addAvailabilityScore(scorers, match) {
+  for (let scorer of scorers) {
+    scorer.availability = getAvailabilityScore(scorer, match);
+  }
+}

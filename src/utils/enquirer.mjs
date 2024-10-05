@@ -4,7 +4,16 @@ import enquirer from 'enquirer';
 
 import { VBManagerInputFile } from '../scripts/2024/params.mjs';
 
-import { TASK_ASSIGN, TASK_CHECK, TASK_UNASSIGNED } from './constants.mjs';
+import {
+  TASK_ASSIGN,
+  TASK_CHECK,
+  TASK_UNASSIGNED,
+  TASK_FIND_SCORER,
+  TEAM_AWAY,
+  TEAM_HOME,
+  DATE,
+} from './constants.mjs';
+import { displayDate } from './log.mjs';
 
 const dir = 'files/external';
 
@@ -25,8 +34,23 @@ const selectPrompt = new enquirer.Select({
 const runPrompt = new enquirer.Select({
   name: 'Run task',
   message: 'What would you like to do with this sheet?',
-  choices: [TASK_ASSIGN, TASK_CHECK, TASK_UNASSIGNED],
+  choices: [TASK_CHECK, TASK_FIND_SCORER, TASK_UNASSIGNED, TASK_ASSIGN],
 });
+
+export function enquireMatch(matches) {
+  const choices = matches.map((match) => {
+    return {
+      message: `${match[TEAM_HOME]} VS ${match[TEAM_AWAY]} - ${displayDate(match[DATE])}`,
+      name: match,
+    };
+  });
+  const prompt = new enquirer.Select({
+    name: 'Match',
+    message: 'Pick a match',
+    choices,
+  });
+  return prompt.run();
+}
 
 export function enquireAssignmentSheet() {
   return selectPrompt.run();

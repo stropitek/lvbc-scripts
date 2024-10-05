@@ -88,8 +88,20 @@ export function logScorers(scorers, options) {
       }
       entry['# scored matches'] = scorer.numScoredMatches;
     }
+    if (options?.availability) {
+      entry['Availability score'] = scorer.availability.score;
+      entry['Availability reason'] = scorer.availability.reason;
+    }
     return entry;
   });
 
   console.table(logTable);
+}
+
+export function displayDate(date) {
+  return new Intl.DateTimeFormat('fr', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone: 'Europe/Zurich',
+  }).format(date);
 }
