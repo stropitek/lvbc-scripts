@@ -1,17 +1,10 @@
-import chalk from 'chalk';
-
 import { assignScorers } from '../core/assign.mjs';
-import {
-  assertTrainingSchedule,
-  getAvailabilityScore,
-} from '../core/checks.mjs';
+import { assertTrainingSchedule } from '../core/checks.mjs';
 import { checkScoredMatches, loadScoredMatches } from '../core/matches.mjs';
 import {
-  addAvailabilityScore,
-  addScorerStats,
-  getCandidates,
+  showAvailableScorers,
+  showUnassignedScorers,
 } from '../core/scorers.mjs';
-import { logUnassignedScorers } from '../core/unassigned.mjs';
 import {
   DATE,
   TASK_ASSIGN,
@@ -24,7 +17,6 @@ import {
   enquireMatch,
   enquireRunTask,
 } from '../utils/enquirer.mjs';
-import { logScorers } from '../utils/log.mjs';
 
 assertTrainingSchedule();
 const file = await enquireAssignmentSheet();
@@ -38,25 +30,13 @@ if (task === TASK_ASSIGN) {
 } else if (task === TASK_CHECK) {
   await checkScoredMatches(assignedMatches);
 } else if (task === TASK_UNASSIGNED) {
-  logUnassignedScorers(assignedMatches);
+  showUnassignedScorers(assignedMatches);
 } else if (task === TASK_FIND_SCORER) {
   const futureMatches = assignedMatches.filter(
     (assignedMatch) => assignedMatch[DATE] >= Date.now(),
   );
   const match = await enquireMatch(futureMatches);
-
-  let candidates = getCandidates(assignedMatches, match);
-  addAvailabilityScore(candidates, match);
-  candidates = candidates.filter(
-    (candidate) => candidate.availability.score > 0,
-  );
-  addScorerStats(candidates, assignedMatches);
-  if (candidates.length > 0) {
-    console.log(chalk.green('There are candidates for this match:'));
-    logScorers(candidates, { numScoredMatches: true, availability: true });
-  } else {
-    console.log(chalk.red('There are no candidates for this match'));
-  }
+  showAvailableScorers(match, assignedMatches);
 } else {
   throw new Error('Unknown task');
 }

@@ -1,6 +1,7 @@
 import assert from 'assert';
 import process from 'process';
 
+import chalk from 'chalk';
 import { groupBy } from 'lodash-es';
 
 import {
@@ -20,6 +21,7 @@ import {
 } from '../utils/constants.mjs';
 import { loadCSV, writeCSV } from '../utils/csv.mjs';
 import { debugFile } from '../utils/debug.mjs';
+import { logScorers } from '../utils/log.mjs';
 
 import { getAvailabilityScore } from './checks.mjs';
 
@@ -179,4 +181,26 @@ export function addAvailabilityScore(scorers, match) {
   for (let scorer of scorers) {
     scorer.availability = getAvailabilityScore(scorer, match);
   }
+}
+
+export function showAvailableScorers(match, assignedMatches) {
+  let candidates = getCandidates(assignedMatches, match);
+  addAvailabilityScore(candidates, match);
+  candidates = candidates.filter(
+    (candidate) => candidate.availability.score > 0,
+  );
+  addScorerStats(candidates, assignedMatches);
+  if (candidates.length > 0) {
+    console.log(chalk.green('There are candidates for this match:'));
+    logScorers(candidates, { numScoredMatches: true, availability: true });
+  } else {
+    console.log(chalk.red('There are no candidates for this match'));
+  }
+}
+
+export function showUnassignedScorers(assignedMatches) {
+  const candidates = getCandidates(assignedMatches);
+  addScorerStats(candidates, assignedMatches);
+
+  logScorers(candidates, { numScoredMatches: true });
 }
