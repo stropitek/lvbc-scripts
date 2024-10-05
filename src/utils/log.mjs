@@ -1,10 +1,10 @@
 import { getScorerFullName } from '../core/scorers.mjs';
 
 import {
+  CLUBDESK_UID,
   DATE,
   MATCH_ID,
   SCORER_ID,
-  SCORER_TEAM,
   TEAM_AWAY,
   TEAM_HOME,
 } from './constants.mjs';
@@ -62,25 +62,30 @@ export function logMatchConflicts(conflicts) {
     return {
       Day: original[DATE].getDay(),
       Date: original[DATE],
-      'Scorer team': original[SCORER_TEAM],
-      'Home team 1':
-        original[TEAM_HOME] === original[SCORER_TEAM]
-          ? 'scorer'
-          : original[TEAM_HOME],
-      'Away team 1':
-        original[TEAM_AWAY] === original[SCORER_TEAM]
-          ? 'scorer'
-          : original[TEAM_AWAY],
-      Conflicting: conflicting[DATE],
-      'Home team 2':
-        conflicting[TEAM_HOME] === original[SCORER_TEAM]
-          ? 'scorer'
-          : conflicting[TEAM_HOME],
-      'Away team 2':
-        conflicting[TEAM_AWAY] === original[SCORER_TEAM]
-          ? 'scorer'
-          : conflicting[TEAM_AWAY],
+      'Home team': original[TEAM_HOME],
+      'Away team': original[TEAM_AWAY],
+      'Home team (conflict)': conflicting[TEAM_HOME],
+      'Away team (conflict)': conflicting[TEAM_AWAY],
     };
   });
   console.table(simplified);
+}
+
+export function logScorers(scorers, options) {
+  const logTable = scorers.map((scorer) => {
+    const entry = {};
+    entry.ID = scorer[CLUBDESK_UID];
+    entry.Name = getScorerFullName(scorer);
+    if (options?.numScoredMatches) {
+      if (scorer.numScoredMatches === undefined) {
+        throw new Error(
+          'Expected numScoredMatches to be defined when logging scorers',
+        );
+      }
+      entry['# scored matches'] = scorer.numScoredMatches;
+    }
+    return entry;
+  });
+
+  console.table(logTable);
 }

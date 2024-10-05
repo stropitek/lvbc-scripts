@@ -20,7 +20,6 @@ import {
   LOCATION,
   MATCH_ID,
   SCORER_ID,
-  SCORER_TEAM,
   TEAM_AWAY,
   TEAM_HOME,
 } from '../utils/constants.mjs';
@@ -40,7 +39,12 @@ export async function loadVbmMatches() {
 }
 
 export async function loadMatches(file, sheetName) {
-  const data = await loadXlsx(file, sheetName);
+  let data = await loadXlsx(file, sheetName);
+  if (!data[0][MATCH_ID]) {
+    data = await loadXlsx(file, sheetName, 1);
+  }
+  assertLooksLikeMatches(data);
+
   return filterAndSortMatches(data);
 }
 
@@ -84,7 +88,6 @@ export async function loadScoredMatches(file) {
       throw new Error('Date mismatch between scored sheet and VBM sheet');
     }
     // Make sure mandatory fields are present
-    match[SCORER_TEAM] = vbm[SCORER_TEAM];
     match[TEAM_HOME] = vbm[TEAM_HOME];
     match[TEAM_AWAY] = vbm[TEAM_AWAY];
     match[LOCATION] = vbm[LOCATION];
@@ -217,5 +220,15 @@ export async function checkScoredMatches(scoredMatches) {
 
   if (args.values.scores) {
     logMatches(scoredMatches, { availabilityScore: true });
+  }
+}
+
+function assertLooksLikeMatches(matches) {
+  for (let match of matches) {
+    assert(match[MATCH_ID], 'No match ID');
+    assert(
+      match[DATE] instanceof Date && !Number.isNaN(match[DATE].getTime()),
+      'Invalid date',
+    );
   }
 }

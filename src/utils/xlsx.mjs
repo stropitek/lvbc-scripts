@@ -1,6 +1,6 @@
 import xlsx from 'xlsx';
 
-export async function loadXlsx(xlsxFile, sheetName) {
+export async function loadXlsx(xlsxFile, sheetName, rowStart) {
   await loadLib();
   const workbook = await xlsx.readFileSync(xlsxFile, {
     cellDates: true,
@@ -8,11 +8,10 @@ export async function loadXlsx(xlsxFile, sheetName) {
 
   if (!sheetName) {
     sheetName = workbook.SheetNames[0];
-    console.log('No sheet name provided, using first sheet:', sheetName);
   }
   const sheet = workbook.Sheets[sheetName];
 
-  const data = xlsx.utils.sheet_to_json(sheet);
+  const data = xlsx.utils.sheet_to_json(sheet, { range: rowStart });
   return data;
 }
 

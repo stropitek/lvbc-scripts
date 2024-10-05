@@ -26,6 +26,12 @@ const clubdeskPlayers = await loadClubdeskPlayers();
 const clubdeskScorers = await loadClubdeskScorers();
 const shuffledScorers = clubdeskScorers.slice().sort(() => Math.random() - 0.5);
 
+/**
+ *
+ * @param {*} assignedMatches A list of matches, some of which are already assigned to a scorer.
+ * @param {*} matchToScore The match for which we want to find a scorer. Used to prioritize scorers based on their availability.
+ * @returns A list of scorers in order of priority, first based on the number of matches scored, then on their availability for the match.
+ */
 export function getCandidates(assignedMatches, matchToScore) {
   const matchByScorer = groupBy(assignedMatches, SCORER_ID);
   delete matchByScorer.undefined;
@@ -36,11 +42,13 @@ export function getCandidates(assignedMatches, matchToScore) {
     );
   });
 
-  candidates.sort((scorer1, scorer2) => {
-    const score1 = getAvailabilityScore(scorer1, matchToScore).score;
-    const score2 = getAvailabilityScore(scorer2, matchToScore).score;
-    return score2 - score1;
-  });
+  if (matchToScore) {
+    candidates.sort((scorer1, scorer2) => {
+      const score1 = getAvailabilityScore(scorer1, matchToScore).score;
+      const score2 = getAvailabilityScore(scorer2, matchToScore).score;
+      return score2 - score1;
+    });
+  }
 
   candidates.sort(
     (scorer1, scorer2) =>
@@ -131,7 +139,7 @@ export async function loadClubdeskScorers() {
     const players = await loadClubdeskPlayers();
 
     const scorers = players.filter((row) => {
-      const age = year - Number(row[CLUBDESK_BIRTH_YEAR]);
+      const age = year + 1 - Number(row[CLUBDESK_BIRTH_YEAR]);
       return (
         row.Marqueur === 'Marqueur' &&
         row[CLUBDESK_LEAGUE] !== 'Arbitre' &&

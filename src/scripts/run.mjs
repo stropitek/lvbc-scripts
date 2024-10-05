@@ -1,5 +1,11 @@
 import { assignScorers } from '../core/assign.mjs';
 import { checkScoredMatches, loadScoredMatches } from '../core/matches.mjs';
+import { logUnassignedScorers } from '../core/unassigned.mjs';
+import {
+  TASK_ASSIGN,
+  TASK_CHECK,
+  TASK_UNASSIGNED,
+} from '../utils/constants.mjs';
 import { enquireAssignmentSheet, enquireRunTask } from '../utils/enquirer.mjs';
 
 import { assertTrainingSchedule } from './2024/checks.mjs';
@@ -11,10 +17,12 @@ const assignedMatches = await loadScoredMatches(file);
 
 const task = await enquireRunTask();
 
-if (task === 'Assign') {
+if (task === TASK_ASSIGN) {
   await assignScorers(assignedMatches);
-} else if (task === 'Check') {
+} else if (task === TASK_CHECK) {
   await checkScoredMatches(assignedMatches);
+} else if (task === TASK_UNASSIGNED) {
+  logUnassignedScorers(assignedMatches);
 } else {
   throw new Error('Unknown task');
 }

@@ -20,6 +20,7 @@ import { getCandidates, getScorerFullName } from './scorers.mjs';
 
 export async function assignScorers(assignedMatches) {
   const newAssignements = [];
+  const conflicts = [];
   let afterCutOffCount = 0;
   let conflictCount = 0;
   let assignedCount = 0;
@@ -46,6 +47,7 @@ export async function assignScorers(assignedMatches) {
 
     const availability = getAvailabilityScore(bestCandidate, matchToScore);
     if (availability.score === 0) {
+      conflicts.push(matchToScore);
       conflictCount++;
     } else {
       matchToScore[SCORER_ID] = bestCandidate[CLUBDESK_UID];
@@ -56,8 +58,12 @@ export async function assignScorers(assignedMatches) {
     }
   }
 
-  if (process.env.DEBUG) {
-    logMatches(newAssignements);
+  console.log('New assignements:');
+  logMatches(newAssignements);
+
+  if (conflicts.length > 0) {
+    console.log('Conflicts:');
+    logMatches(conflicts);
   }
 
   await writeXlsx(

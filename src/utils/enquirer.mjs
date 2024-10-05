@@ -4,6 +4,8 @@ import enquirer from 'enquirer';
 
 import { VBManagerInputFile } from '../scripts/2024/params.mjs';
 
+import { TASK_ASSIGN, TASK_CHECK, TASK_UNASSIGNED } from './constants.mjs';
+
 const dir = 'files/external';
 
 const externalSheets = (await fs.readdir(dir)).filter(
@@ -23,7 +25,7 @@ const selectPrompt = new enquirer.Select({
 const runPrompt = new enquirer.Select({
   name: 'Run task',
   message: 'What would you like to do with this sheet?',
-  choices: ['Assign', 'Check'],
+  choices: [TASK_ASSIGN, TASK_CHECK, TASK_UNASSIGNED],
 });
 
 export function enquireAssignmentSheet() {
