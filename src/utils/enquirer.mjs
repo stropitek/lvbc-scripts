@@ -24,8 +24,8 @@ const externalSheets = (await fs.readdir(dir)).filter(
 );
 
 const matchesFileOptions = [
-  VBManagerInputFile,
   ...externalSheets.map((file) => `${dir}/${file}`),
+  VBManagerInputFile,
 ];
 const selectPrompt = new enquirer.Select({
   name: 'Match sheet',
