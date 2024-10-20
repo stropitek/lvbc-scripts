@@ -5,7 +5,11 @@ import { parseArgs } from 'node:util';
 import chalk from 'chalk';
 import { groupBy } from 'lodash-es';
 
-import { SEASON_START, VBManagerInputFile } from '../scripts/2024/params.mjs';
+import {
+  mergedMatches,
+  SEASON_START,
+  VBManagerInputFile,
+} from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
   CLUBDESK_LEAGUE,
@@ -36,26 +40,38 @@ import {
 } from './checks.mjs';
 import { loadClubdeskScorers, normalizeScorerId } from './scorers.mjs';
 
+const excludedMatchIDs = new Set(Object.values(mergedMatches).flat());
+console.log({ excludedMatchIDs });
+
 export async function loadVbmMatches() {
   return loadMatches(VBManagerInputFile);
 }
 
-export async function loadMatches(file, sheetName) {
+async function loadMatches(file, sheetName) {
   let data = await loadXlsx(file, sheetName);
   if (!data[0][MATCH_ID]) {
     data = await loadXlsx(file, sheetName, 1);
   }
   assertLooksLikeMatches(data);
 
-  return filterAndSortMatches(data);
-}
-
-function filterAndSortMatches(matches) {
-  assertMatchDates(matches);
-  return matches
+  assertMatchDates(data);
+  const filtered = data
     .filter((line) => line)
     .filter((line) => line[DATE].getTime() > SEASON_START)
+    .filter(shouldIncludeMatch)
     .sort((line1, line2) => line1[DATE].getTime() - line2[DATE].getTime());
+
+  return filtered;
+}
+
+function shouldIncludeMatch(match) {
+  if (mergedMatches[match[MATCH_ID]]) {
+    match.comment = match.comment || '';
+    match.comment += `\nMerged with ${mergedMatches[match[MATCH_ID]].join(', ')}`;
+  }
+
+  const excluded = excludedMatchIDs.has(String(match[MATCH_ID]));
+  return !excluded;
 }
 
 function filterHomeMatches(allMatches) {
