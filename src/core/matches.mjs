@@ -47,6 +47,11 @@ export async function loadVbmMatches() {
   return loadMatches(VBManagerInputFile);
 }
 
+export async function loadScoredVbmMatches() {
+  const matches = await loadMatches(VBManagerInputFile);
+  return filterHomeMatches(matches);
+}
+
 async function loadMatches(file, sheetName) {
   let data = await loadXlsx(file, sheetName);
   if (!data[0][MATCH_ID]) {
@@ -151,6 +156,7 @@ export async function checkScoredMatches(scoredMatches) {
 
   const allMatches = await loadVbmMatches();
   const scorers = await loadClubdeskScorers();
+  const scoredVbmMatches = await loadScoredVbmMatches();
 
   const conflicts = [];
   let notAssigned = [];
@@ -158,6 +164,17 @@ export async function checkScoredMatches(scoredMatches) {
   let changed = [];
   let invalidScorer = [];
   let nameMismatch = [];
+  let missingMatches = [];
+
+  for (let match of scoredVbmMatches) {
+    if (
+      !scoredMatches.find(
+        (scoredMatch) => scoredMatch[MATCH_ID] === match[MATCH_ID],
+      )
+    ) {
+      missingMatches.push(match);
+    }
+  }
 
   for (let match of scoredMatches) {
     const newMatch = allMatches.find(
@@ -194,6 +211,15 @@ export async function checkScoredMatches(scoredMatches) {
         training.push(match);
       }
     }
+  }
+
+  if (missingMatches.length > 0) {
+    console.error(
+      chalk.red(
+        `There are ${missingMatches.length} matches in the VBManager file that are not listed`,
+      ),
+    );
+    logMatches(missingMatches);
   }
 
   if (changed.length > 0) {
