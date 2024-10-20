@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 
 import enquirer from 'enquirer';
 
+import { getScorerFullName, loadClubdeskScorers } from '../core/scorers.mjs';
 import { VBManagerInputFile } from '../scripts/2024/params.mjs';
 
 import {
@@ -12,6 +13,7 @@ import {
   TEAM_AWAY,
   TEAM_HOME,
   DATE,
+  TASK_FIND_MATCH,
 } from './constants.mjs';
 import { displayDate } from './log.mjs';
 
@@ -34,7 +36,13 @@ const selectPrompt = new enquirer.Select({
 const runPrompt = new enquirer.Select({
   name: 'Run task',
   message: 'What would you like to do with this sheet?',
-  choices: [TASK_CHECK, TASK_FIND_SCORER, TASK_UNASSIGNED, TASK_ASSIGN],
+  choices: [
+    TASK_CHECK,
+    TASK_FIND_SCORER,
+    TASK_FIND_MATCH,
+    TASK_UNASSIGNED,
+    TASK_ASSIGN,
+  ],
 });
 
 export function enquireMatch(matches) {
@@ -48,6 +56,19 @@ export function enquireMatch(matches) {
     name: 'Match',
     message: 'Pick a match',
     choices,
+  });
+  return prompt.run();
+}
+
+export async function enquireScorer() {
+  const scorers = await loadClubdeskScorers();
+  const prompt = new enquirer.AutoComplete({
+    name: 'scorer',
+    message: 'Pick a scorer',
+    choices: scorers.map((scorer) => ({
+      message: getScorerFullName(scorer),
+      name: scorer,
+    })),
   });
   return prompt.run();
 }

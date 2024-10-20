@@ -3,6 +3,7 @@ import process from 'node:process';
 import { parseArgs } from 'node:util';
 
 import chalk from 'chalk';
+import { groupBy } from 'lodash-es';
 
 import { SEASON_START, VBManagerInputFile } from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
@@ -237,5 +238,31 @@ function assertLooksLikeMatches(matches) {
       match[DATE] instanceof Date && !Number.isNaN(match[DATE].getTime()),
       'Invalid date',
     );
+  }
+}
+
+export function showAvailableMatches(scorer, assignedMatches) {
+  let candidates = assignedMatches.slice();
+
+  addAvailabilityScore(candidates, scorer);
+  // Do not log matches which cannot be assigned
+  candidates = candidates.filter((match) => match.availability.score > 0);
+  // Split between unassigned and assigned matches
+  const grouped = groupBy(candidates, (match) =>
+    match[SCORER_ID] ? 'assigned' : 'unassigned',
+  );
+  if (grouped.assigned) {
+    console.log(chalk.green('Assigned matches'));
+    logMatches(grouped.assigned, { availabilityScore: true });
+  }
+  if (grouped.unassigned) {
+    console.log(chalk.green('Unassigned matches'));
+    logMatches(grouped.unassigned, { availabilityScore: true });
+  }
+}
+
+export function addAvailabilityScore(matches, scorer) {
+  for (let match of matches) {
+    match.availability = getAvailabilityScore(scorer, match);
   }
 }

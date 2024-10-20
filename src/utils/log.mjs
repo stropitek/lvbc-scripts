@@ -32,7 +32,7 @@ export function logMatches(matches, options = {}) {
     const list = {
       ID: match[MATCH_ID],
       Day: match[DATE].getDay(),
-      Date: match[DATE],
+      Date: dateToString(match[DATE]),
       'Home team': match[TEAM_HOME],
       'Away team': match[TEAM_AWAY],
       Scorer: match[SCORER_ID]

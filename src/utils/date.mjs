@@ -17,7 +17,11 @@ export function isSameDay(date1, date2) {
 }
 
 export function dateToString(date) {
-  return date.toLocaleString('fr', { timeZone: 'Europe/Zurich' });
+  return date.toLocaleString('fr', {
+    timeZone: 'Europe/Zurich',
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
 }
 
 export function isApproximatelySameDate(date1, date2) {
