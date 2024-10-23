@@ -1,6 +1,7 @@
-import { getScorerFullName } from '../core/scorers.mjs';
+import { formatPhoneNumber, getScorerFullName } from '../core/scorers.mjs';
 
 import {
+  CLUBDESK_PHONE,
   CLUBDESK_UID,
   DATE,
   MATCH_ID,
@@ -80,6 +81,7 @@ export function logScorers(scorers, options) {
     const entry = {};
     entry.ID = scorer[CLUBDESK_UID];
     entry.Name = getScorerFullName(scorer);
+    entry.Phone = formatPhoneNumber(scorer[CLUBDESK_PHONE]);
     if (options?.numScoredMatches) {
       if (scorer.numScoredMatches === undefined) {
         throw new Error(

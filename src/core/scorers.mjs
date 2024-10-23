@@ -21,7 +21,7 @@ import {
 } from '../utils/constants.mjs';
 import { loadCSV, writeCSV } from '../utils/csv.mjs';
 import { debugFile } from '../utils/debug.mjs';
-import { logScorers } from '../utils/log.mjs';
+import { logMatches, logScorers } from '../utils/log.mjs';
 
 import { getAvailabilityScore } from './checks.mjs';
 
@@ -192,6 +192,7 @@ export function showAvailableScorers(match, assignedMatches) {
   addScorerStats(candidates, assignedMatches);
   if (candidates.length > 0) {
     console.log(chalk.green('There are candidates for this match:'));
+    logMatches([match]);
     logScorers(candidates, { numScoredMatches: true, availability: true });
   } else {
     console.log(chalk.red('There are no candidates for this match'));
@@ -203,4 +204,14 @@ export function showUnassignedScorers(assignedMatches) {
   addScorerStats(candidates, assignedMatches);
 
   logScorers(candidates, { numScoredMatches: true });
+}
+
+export function formatPhoneNumber(phoneNumber) {
+  if (typeof phoneNumber === 'string') {
+    let formatted = phoneNumber.replaceAll(' ', '');
+    if (formatted.match(/^\+\d{11}/)) {
+      return `${formatted.slice(0, 3)} ${formatted.slice(3, 5)} ${formatted.slice(5, 8)} ${formatted.slice(8, 10)} ${formatted.slice(10, 12)}`;
+    }
+  }
+  return phoneNumber;
 }

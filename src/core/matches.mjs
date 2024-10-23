@@ -41,7 +41,6 @@ import {
 import { loadClubdeskScorers, normalizeScorerId } from './scorers.mjs';
 
 const excludedMatchIDs = new Set(Object.values(mergedMatches).flat());
-console.log({ excludedMatchIDs });
 
 export async function loadVbmMatches() {
   return loadMatches(VBManagerInputFile);
