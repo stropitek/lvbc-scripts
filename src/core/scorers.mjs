@@ -137,17 +137,21 @@ async function loadClubdeskPlayers() {
   return uniquePlayers;
 }
 
-export async function loadClubdeskScorers() {
+export async function loadClubdeskScorers(options = {}) {
+  const { loadExempted = false } = options;
+  const scorerCriterium = loadExempted
+    ? (row) =>
+        row.Marqueur === 'Marqueur' || row.Marqueur === 'Marqueur dispensé'
+    : (row) => {
+        const age = year + 1 - Number(row[CLUBDESK_BIRTH_YEAR]);
+        return row.Marqueur === 'Marqueur' && age >= minScorerAge;
+      };
   try {
     const players = await loadClubdeskPlayers();
 
     const scorers = players.filter((row) => {
-      const age = year + 1 - Number(row[CLUBDESK_BIRTH_YEAR]);
-      return (
-        row.Marqueur === 'Marqueur' &&
-        row[CLUBDESK_LEAGUE] !== 'Arbitre' &&
-        age >= minScorerAge
-      );
+      // Avoid duplicates by not including the "Arbitre" role
+      return scorerCriterium(row) && row[CLUBDESK_LEAGUE] !== 'Arbitre';
     });
 
     if (process.env.DEBUG) {

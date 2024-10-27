@@ -61,7 +61,7 @@ export function enquireMatch(matches) {
 }
 
 export async function enquireScorer() {
-  const scorers = await loadClubdeskScorers();
+  const scorers = await loadClubdeskScorers({ loadExempted: true });
   const prompt = new enquirer.AutoComplete({
     name: 'scorer',
     message: 'Pick a scorer',
