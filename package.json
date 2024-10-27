@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "eslint": "eslint . --cache",
+    "eslint-fix": "eslint . --fix",
     "prettier": "prettier --check ./src",
     "prettier-write": "prettier --write ./"
   },

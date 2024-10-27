@@ -29,6 +29,7 @@ import {
   logMatchConflicts,
   logMatchDateChange,
   logMatches,
+  logScorers,
 } from '../utils/log.mjs';
 import { loadXlsx, writeXlsx } from '../utils/xlsx.mjs';
 
@@ -300,6 +301,9 @@ export function showAvailableMatches(scorer, assignedMatches) {
     console.log(chalk.green('Unassigned matches'));
     logMatches(grouped.unassigned, { availabilityScore: true });
   }
+
+  console.log(chalk.green('Selected scorer'));
+  logScorers([scorer]);
 }
 
 export function addAvailabilityScore(matches, scorer) {

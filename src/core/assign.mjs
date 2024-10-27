@@ -1,8 +1,5 @@
-import process from 'process';
-
 import chalk from 'chalk';
 
-import { getAvailabilityScore } from './checks.mjs';
 import { assignedFile, ASSIGNMENT_CUTOFF } from '../scripts/2024/params.mjs';
 import {
   CLUBDESK_PHONE,
@@ -16,6 +13,7 @@ import {
 import { logMatches } from '../utils/log.mjs';
 import { writeXlsx } from '../utils/xlsx.mjs';
 
+import { getAvailabilityScore } from './checks.mjs';
 import { getCandidates, getScorerFullName } from './scorers.mjs';
 
 export async function assignScorers(assignedMatches) {
