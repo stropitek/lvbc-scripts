@@ -67,6 +67,8 @@ export const mergedMatches = {
   362272: ['362293'],
 };
 
+export const ignoredMatches = ['367334'];
+
 export const ASSIGNMENT_CUTOFF = new Date('2025-06-01');
 
 export const MAX_ASSIGNMENTS = 2;

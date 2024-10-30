@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import { groupBy } from 'lodash-es';
 
 import {
+  ignoredMatches,
   mergedMatches,
   SEASON_START,
   VBManagerInputFile,
@@ -70,6 +71,10 @@ async function loadMatches(file, sheetName) {
 }
 
 function shouldIncludeMatch(match) {
+  if (ignoredMatches.includes(String(match[MATCH_ID]))) {
+    console.log('here');
+    return false;
+  }
   if (mergedMatches[match[MATCH_ID]]) {
     match.comment = match.comment || '';
     match.comment += `\nMerged with ${mergedMatches[match[MATCH_ID]].join(', ')}`;
