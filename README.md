@@ -2,38 +2,48 @@
 
 ## Assignement process
 
-1. Go to volley ball manager and export all matches involving the club's team.
-   - Merge consecutive junior matches (1 hour apart) that occur during the weekends together as 1 entry. Keep the two match identifiers in a new comment column.
-   - Convert to a table and save.
-   - Save to `input/<year>/vb-manager.xlsx`
+1. Get the list of matches.
+   - Export from VM. See [VB Manager](#vb-manager) for list of columns to export.
+   - Move and rename the exported file so that it matches what is configured in `2024/params.mjs`.
+   - Identify matches that must be merged, and set it up in `2024/params.mjs`.
 2. Go to clubdesk and download the list of players.
    - Make sure to use an up to date list of active players.
+   - The columns to export [are liste here](#clubdesk).
    - For new players, make sure to fill the "Marqueur" field appropriately.
-   - Save as excel cvs to `input/<year>/clubdesk_players.csv`
-3. Run `init-scorers` script which reads the list of players and filters it to only keep those who can score matches.
-4. Run `init-schedule` script which reads volleyball manager export of all matches involving the club's team, and cleans it up.
-5. From this list filter home matches and write pre-assigned file.
-6. Fill pre-assigned file by hand based on rules that cannot be easily automated.
-7. Run fill-schedule script which fills in the blank according to rules. Creates assigned file.
-8. Copy to assigned-tuned file and tune as needed.
-9. Run `check-schedule` script to verify no match conflicts.
-10. Run `check-schedule --external` script to verify a scheduled downloaded from google sheets after it has been edited.
+   - Save with format "CSV (Excel)" to the file configured in `2024/params.mjs`
+3. Run `node src/scripts/run.mjs`. You can choose between different tasks:
+   - Check the sheet. It will print errors / warnings.
+   - Find a scorer for a match.
+   - Find a match for a scorer.
+   - Show unassigned players.
+   - Generate the assignement sheet.
+   - If you need to run the script but choose a different file input, run `node src/scripts/run.mjs -i`.
 
-# 2023
+### VB Manager
 
-> [!WARNING]  
-> This is the old process and might not work anymore. The new process is described above.
+List of columns to export:
 
-## Assignement process
+- \# Match
+- H/F
+- CL
+- Ligue
+- Groupe
+- Jour
+- Date/heure de début du match
+- Club recevant
+- Equipe recevante
+- Equipe visiteuse
+- Salle
 
-1. Run `init-schedule` script which reads volleyball manager export of all matches involving the club's team
-2. From this list filter home matches and write pre-assigned file.
-3. Fill pre-assigned file by hand based on rules that cannot be easily automated.
-4. Run `fill-schedule` script which fills in the blank according to rules. Creates assigned file.
-5. Copy to assigned-tuned file and tune as needed.
-6. Run `check-schedule` script to verify no match conflicts.
-7. Run `check-schedule --external` script to verify a scheduled downloaded from google sheets after it has been edited.
+### Clubdesk
 
-## Other commands
+List of columns to export:
 
-`rewrite.mjs` is for rechecking a file which was downloaded from google sheets.
+- Groupe
+- Fonction
+- Nom (complet)
+- Téléphone privé
+- Sexe
+- Marqueur
+- E-mail
+- Année de naissance
