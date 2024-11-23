@@ -1,3 +1,5 @@
+import { parseArgs } from 'node:util';
+
 import { assignScorers } from '../core/assign.mjs';
 import { assertTrainingSchedule } from '../core/checks.mjs';
 import {
@@ -24,8 +26,22 @@ import {
   enquireScorer,
 } from '../utils/enquirer.mjs';
 
+import { sharedGoogleSheetFile } from './2024/params.mjs';
+
+const args = parseArgs({
+  options: {
+    interactive: {
+      type: 'boolean',
+      short: 'i',
+    },
+  },
+});
+
 assertTrainingSchedule();
-const file = await enquireAssignmentSheet();
+
+const file = args.values.interactive
+  ? await enquireAssignmentSheet()
+  : sharedGoogleSheetFile;
 // Load all matches so that we can check if a player has a conflict
 const assignedMatches = await loadScoredMatches(file);
 

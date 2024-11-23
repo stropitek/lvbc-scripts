@@ -72,7 +72,6 @@ async function loadMatches(file, sheetName) {
 
 function shouldIncludeMatch(match) {
   if (ignoredMatches.includes(String(match[MATCH_ID]))) {
-    console.log('here');
     return false;
   }
   if (mergedMatches[match[MATCH_ID]]) {

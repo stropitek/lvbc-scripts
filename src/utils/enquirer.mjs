@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import enquirer from 'enquirer';
 
 import { getScorerFullName, loadClubdeskScorers } from '../core/scorers.mjs';
-import { VBManagerInputFile } from '../scripts/2024/params.mjs';
+import { sharedGoogleSheetFile, VBManagerInputFile } from '../scripts/2024/params.mjs';
 
 import {
   TASK_ASSIGN,
@@ -17,14 +17,9 @@ import {
 } from './constants.mjs';
 import { displayDate } from './log.mjs';
 
-const dir = 'files/external';
-
-const externalSheets = (await fs.readdir(dir)).filter(
-  (file) => file.endsWith('.xlsx') && !file.startsWith('~'),
-);
 
 const matchesFileOptions = [
-  ...externalSheets.map((file) => `${dir}/${file}`),
+  sharedGoogleSheetFile,
   VBManagerInputFile,
 ];
 const selectPrompt = new enquirer.Select({

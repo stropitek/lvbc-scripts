@@ -7,6 +7,8 @@ export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
 // If matches are merged togther, use the mergedMatches parameter below.
 export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';
 
+export const sharedGoogleSheetFile = 'files/24/input/Bénévoles Lausanne VBC 2024_2025.xlsx'
+
 // Scorers are assigned to matches in a generated spreadsheet.
 export const assignedFile = 'files/24/output/assigned.xlsx';
 
