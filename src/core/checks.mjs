@@ -10,8 +10,8 @@ import {
 } from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
+  CLUBDESK_GROUPS,
   DATE,
-  CLUBDESK_LEAGUE,
   LOCATION,
   SCORER_1,
   SCORER_ID,
@@ -19,7 +19,7 @@ import {
 import { isSameDay } from '../utils/date.mjs';
 
 import { loadVbmMatches } from './matches.mjs';
-import { getScorerFullName } from './scorers.mjs';
+import { getLeagues, getScorerFullName } from './scorers.mjs';
 
 const hourRegex = /^\d{2}:\d{2}$/;
 
@@ -43,9 +43,9 @@ export function assertTrainingSchedule() {
 const VBMMatches = await loadVbmMatches();
 
 function findSameDayMatch(match, scorer) {
-  const league = scorer[CLUBDESK_LEAGUE];
-  return VBMMatches.filter(
-    (match) => translateLeagueToClubdesk(match) === league,
+  const leagues = getLeagues(scorer);
+  return VBMMatches.filter((match) =>
+    leagues.includes(translateLeagueToClubdesk(match)),
   ).find((teamMatch) => {
     return isSameDay(teamMatch[DATE], match[DATE]);
   });
@@ -68,12 +68,18 @@ export function findConflict(match, scorer) {
   return undefined;
 }
 
-export function hasTraining(match, team) {
+export function hasTraining(match, scorer) {
   const matchDay = match[DATE].getDay();
+  const scorerLeagues = getLeagues(scorer);
 
-  const schedule = trainingSchedule[team];
+  const schedule = scorerLeagues
+    .map((league) => trainingSchedule[league] || [])
+    .flat();
 
-  assert(schedule, `Missing training schedule for team ${team}`);
+  assert(
+    schedule.length > 0,
+    `Missing training schedule for scorer with groups ${scorer[CLUBDESK_GROUPS]}`,
+  );
 
   for (let [day, timeStart, timeEnd] of schedule) {
     if (matchDay === day) {
@@ -126,9 +132,9 @@ function getMatchConflictScore(match1, match2) {
 export function getAvailabilityScore(scorer, match) {
   const scores = [];
   const league = translateLeagueToClubdesk(match);
-  const scorerLeague = scorer[CLUBDESK_LEAGUE];
+  const leagues = getLeagues(scorer);
 
-  if (league === scorerLeague) {
+  if (leagues.includes(league)) {
     // Cannot play and score the same match
     scores.push({
       score: 0,
@@ -136,7 +142,7 @@ export function getAvailabilityScore(scorer, match) {
     });
   }
 
-  if (hasTraining(match, scorer[CLUBDESK_LEAGUE])) {
+  if (hasTraining(match, scorer)) {
     scores.push({
       score: TRAINING_CONFLICT_SCORE,
       reason: 'Soft conflict: Training',

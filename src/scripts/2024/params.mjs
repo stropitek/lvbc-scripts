@@ -7,7 +7,8 @@ export const clubdeskPlayersFile = 'files/24/input/clubdesk-players.csv';
 // If matches are merged togther, use the mergedMatches parameter below.
 export const VBManagerInputFile = 'files/24/input/vb-manager.xlsx';
 
-export const sharedGoogleSheetFile = 'files/24/input/Bénévoles Lausanne VBC 2024_2025.xlsx'
+export const sharedGoogleSheetFile =
+  'files/24/input/Bénévoles Lausanne VBC 2024_2025.xlsx';
 
 // Scorers are assigned to matches in a generated spreadsheet.
 export const assignedFile = 'files/24/output/assigned.xlsx';
@@ -50,7 +51,13 @@ export const trainingSchedule = {
     [2, '18:00', '20:00'],
     [4, '18:00', '19:30'],
   ],
+  Loisirs: [
+    [2, '19:30', '21:00'],
+    [4, '21:00', '22:30'],
+  ],
 };
+
+export const validClubdeskLeagues = new Set(Object.keys(trainingSchedule));
 
 export const equipeToLeague = {
   'Lausanne II F4': '4L',

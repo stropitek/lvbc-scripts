@@ -7,14 +7,15 @@ import { groupBy } from 'lodash-es';
 import {
   clubdeskPlayersFile,
   MAX_ASSIGNMENTS,
+  validClubdeskLeagues,
   year,
 } from '../scripts/2024/params.mjs';
 import {
   CLUBDESK_BIRTH_YEAR,
   CLUBDESK_FIELDS,
   CLUBDESK_FIRST_NAME,
+  CLUBDESK_GROUPS,
   CLUBDESK_LAST_NAME,
-  CLUBDESK_LEAGUE,
   CLUBDESK_UID,
   minScorerAge,
   SCORER_ID,
@@ -28,6 +29,22 @@ import { getAvailabilityScore } from './checks.mjs';
 const clubdeskPlayers = await loadClubdeskPlayers();
 const clubdeskScorers = await loadClubdeskScorers();
 const shuffledScorers = clubdeskScorers.slice().sort(() => Math.random() - 0.5);
+
+/**
+ * Get the identifier of the leagues that a scorer is assigned to.
+ * @param {*} scorer
+ * @returns {string[]} List of leagues that the scorer is part of (usually just 1).
+ */
+export function getLeagues(scorer) {
+  const groups = (scorer[CLUBDESK_GROUPS] || '')
+    .trim()
+    .split(', ')
+    .map((group) => group.replace(/\s\([^)]+\)$/, ''))
+    .filter((group) => group)
+    .filter((group) => validClubdeskLeagues.has(group));
+
+  return groups;
+}
 
 /**
  *
@@ -64,10 +81,15 @@ export function getCandidates(assignedMatches, matchToScore) {
 
 /**
  *
- * @param {*} scorers List of clubdesk scorers
+ * @param {object[]} scorers List of clubdesk scorers
+ * @returns {object[][]} List of pairs of scorers.
  */
 export function createScorerPairs(scorers) {
-  const scorerGroups = groupBy(scorers, CLUBDESK_LEAGUE);
+  const scorerGroups = groupBy(scorers, (scorer) => {
+    const firstLeague = getLeagues(scorer)[0];
+    assert(firstLeague, 'Scorer must be part of a league');
+    return firstLeague;
+  });
   const pairs = [];
   for (let [key, scorers] of Object.entries(scorerGroups)) {
     if (scorers.length < 2) {
@@ -112,7 +134,7 @@ export function getScorerFullName(scorer, { omitLeague } = {}) {
     assert(scorerData, 'Could not find scorer data');
   }
 
-  return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}${omitLeague ? '' : ` (${scorerData[CLUBDESK_LEAGUE]})`}`;
+  return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}${omitLeague ? '' : ` (${getLeagues(scorerData).join(', ')})`}`;
 }
 
 async function loadClubdeskPlayers() {
@@ -139,19 +161,29 @@ async function loadClubdeskPlayers() {
 
 export async function loadClubdeskScorers(options = {}) {
   const { loadExempted = false } = options;
-  const scorerCriterium = loadExempted
-    ? (row) =>
-        row.Marqueur === 'Marqueur' || row.Marqueur === 'Marqueur dispensé'
-    : (row) => {
-        const age = year + 1 - Number(row[CLUBDESK_BIRTH_YEAR]);
-        return row.Marqueur === 'Marqueur' && age >= minScorerAge;
-      };
+
   try {
     const players = await loadClubdeskPlayers();
 
     const scorers = players.filter((row) => {
-      // Avoid duplicates by not including the "Arbitre" role
-      return scorerCriterium(row) && row[CLUBDESK_LEAGUE] !== 'Arbitre';
+      const groups = getLeagues(row);
+      if (groups.length === 0) {
+        return false;
+      }
+      if (loadExempted) {
+        return (
+          row.Marqueur === 'Nouveau marqueur' ||
+          row.Marqueur === 'Marqueur' ||
+          row.Marqueur === 'Marqueur dispensé'
+        );
+      } else {
+        const age = year + 1 - Number(row[CLUBDESK_BIRTH_YEAR]);
+        return (
+          (row.Marqueur === 'Marqueur' ||
+            row.Marqueur === 'Nouveau marqueur') &&
+          age >= minScorerAge
+        );
+      }
     });
 
     if (process.env.DEBUG) {

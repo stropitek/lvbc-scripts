@@ -34,7 +34,7 @@ export const CLUBDESK_UID = '[Id]';
 export const CLUBDESK_BIRTH_YEAR = 'Année de naissance';
 export const CLUBDESK_FIRST_NAME = 'Prénom';
 export const CLUBDESK_LAST_NAME = 'Nom';
-export const CLUBDESK_LEAGUE = 'Groupe';
+export const CLUBDESK_GROUPS = '[Groupes]';
 export const CLUBDESK_SCORER_ROLE = 'Marqueur';
 export const CLUBDESK_PHONE = 'Téléphone privé';
 export const CLUBDESK_EMAIL = 'E-mail';
@@ -45,13 +45,18 @@ export const CLUBDESK_FIELDS = [
   CLUBDESK_BIRTH_YEAR,
   CLUBDESK_FIRST_NAME,
   CLUBDESK_LAST_NAME,
-  CLUBDESK_LEAGUE,
+  CLUBDESK_GROUPS,
   CLUBDESK_SCORER_ROLE,
   CLUBDESK_PHONE,
   CLUBDESK_EMAIL,
 ];
 
 export const minScorerAge = 16;
+
+export const maxScoreMatchCount = {
+  Marqueur: 2,
+  'Nouveau marqueur': 1,
+};
 
 // Enquirer tasks
 export const TASK_ASSIGN = 'Assign sheet';

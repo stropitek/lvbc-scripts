@@ -13,7 +13,6 @@ import {
 } from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
-  CLUBDESK_LEAGUE,
   CLUBDESK_UID,
   DATE,
   GENDER,
@@ -40,7 +39,11 @@ import {
   getNameMismatchError,
   hasTraining,
 } from './checks.mjs';
-import { loadClubdeskScorers, normalizeScorerId } from './scorers.mjs';
+import {
+  getLeagues,
+  loadClubdeskScorers,
+  normalizeScorerId,
+} from './scorers.mjs';
 
 const excludedMatchIDs = new Set(Object.values(mergedMatches).flat());
 
@@ -130,7 +133,9 @@ export async function loadScoredMatches(file) {
 
   // Check that matches and scorers have the same league names
   const matchTeams = new Set(matches.map(translateLeagueToClubdesk));
-  const playerTeams = new Set(scorers.map((scorer) => scorer[CLUBDESK_LEAGUE]));
+  const playerTeams = new Set(
+    scorers.map((scorer) => getLeagues(scorer)).flat(),
+  );
   if (matchTeams.has(undefined) || playerTeams.has(undefined)) {
     throw new Error('Some matches or players have no league');
   }
@@ -211,7 +216,8 @@ export async function checkScoredMatches(scoredMatches) {
       if (conflictedMatch) {
         conflicts.push([match, conflictedMatch]);
       }
-      if (hasTraining(match, scorer[CLUBDESK_LEAGUE])) {
+
+      if (hasTraining(match, scorer)) {
         training.push(match);
       }
     }
