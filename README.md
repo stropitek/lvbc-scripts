@@ -37,10 +37,9 @@ List of columns to export:
 
 ### Clubdesk
 
-List of columns to export:
+List of columns to export (from the "Personnes" view):
 
-- Groupe
-- Fonction
+- Groupes
 - Nom (complet)
 - Téléphone privé
 - Sexe
