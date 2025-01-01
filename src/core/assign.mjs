@@ -15,7 +15,7 @@ import { writeXlsx } from '../utils/xlsx.mjs';
 import { getAvailabilityScore } from './checks.mjs';
 import { getCandidates, getScorerFullName } from './scorers.mjs';
 
-const TRIALS = 10;
+const TRIALS = 20;
 
 export async function assignScorers(assignedMatches) {
   const clone = structuredClone(assignedMatches);
@@ -102,7 +102,7 @@ async function commitResult(data) {
   } = data;
 
   console.log('New assignements:');
-  logMatches(newAssignements, { availabilityScore: true });
+  logMatches(newAssignements, { availabilityScore: true, scorerPhone: true });
 
   if (conflicts.length > 0) {
     console.log('Conflicts:');

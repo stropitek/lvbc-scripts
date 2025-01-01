@@ -51,6 +51,11 @@ export function logMatches(matches, options = {}) {
         ? getScorerFullName(getScorerId(match), { withClubdeskId: true })
         : undefined,
     };
+    if (options.scorerPhone && match[SCORER_ID]) {
+      const scorerId = getScorerId(match);
+      const scorer = findClubdeskScorer(scorerId);
+      list['Scorer phone'] = scorer[CLUBDESK_PHONE];
+    }
 
     if (options.availabilityScore) {
       list['Availability score'] = match.availability.score;
@@ -68,10 +73,7 @@ export function logMatches(matches, options = {}) {
     if (options.error) {
       list.error = match.error;
     }
-    if (options.scorerPhone && match[SCORER_ID]) {
-      const scorer = findClubdeskScorer(match[SCORER_ID]);
-      list['Scorer phone'] = scorer[CLUBDESK_PHONE];
-    }
+
     return list;
   });
   console.table(simplified);
