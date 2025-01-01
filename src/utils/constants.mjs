@@ -53,11 +53,6 @@ export const CLUBDESK_FIELDS = [
 
 export const minScorerAge = 16;
 
-export const maxScoreMatchCount = {
-  Marqueur: 2,
-  'Nouveau marqueur': 1,
-};
-
 // Enquirer tasks
 export const TASK_ASSIGN = 'Assign sheet';
 export const TASK_CHECK = 'Check sheet';

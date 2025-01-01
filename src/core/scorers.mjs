@@ -131,8 +131,21 @@ function createPairsBy3(scorers) {
  * @returns
  */
 export function getScorerFullName(scorer, { omitLeague, withClubdeskId } = {}) {
+  const scorerData = findClubdeskScorer(scorer);
+
+  let fullName = `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}`;
+  if (!omitLeague) {
+    fullName += ` (${getLeagues(scorerData).join(', ')})`;
+  }
+  if (withClubdeskId) {
+    fullName += ` [${scorerData[CLUBDESK_UID]}]`;
+  }
+  return fullName;
+}
+
+export function findClubdeskScorer(scorer) {
   assert(scorer, 'scorer must be defined');
-  let scorerData = scorer;
+  let scorerData;
   if (typeof scorer === 'number') {
     scorerData = clubdeskPlayers.find(
       (player) => player[CLUBDESK_UID] === scorer,
@@ -143,16 +156,11 @@ export function getScorerFullName(scorer, { omitLeague, withClubdeskId } = {}) {
       (player) => player[CLUBDESK_UID] === Number(scorer),
     );
     assert(scorerData, 'Could not find scorer data from string');
+  } else if (typeof scorer === 'object' && scorer[CLUBDESK_UID]) {
+    scorerData = scorer;
   }
-
-  let fullName = `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}`;
-  if (!omitLeague) {
-    fullName += ` (${getLeagues(scorerData).join(', ')})`;
-  }
-  if (withClubdeskId) {
-    fullName += ` [${scorerData[CLUBDESK_UID]}]`;
-  }
-  return fullName;
+  assert(scorerData, 'Could not find scorer data');
+  return scorerData;
 }
 
 async function loadClubdeskPlayers() {

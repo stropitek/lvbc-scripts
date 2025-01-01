@@ -15,7 +15,25 @@ import { writeXlsx } from '../utils/xlsx.mjs';
 import { getAvailabilityScore } from './checks.mjs';
 import { getCandidates, getScorerFullName } from './scorers.mjs';
 
+const TRIALS = 10;
+
 export async function assignScorers(assignedMatches) {
+  const clone = structuredClone(assignedMatches);
+  let bestResult = await assignScorersOnce(clone);
+  let bestScore = bestResult.assignedCount;
+  for (let i = 0; i < TRIALS - 1; i++) {
+    const clone = structuredClone(assignedMatches);
+    // eslint-disable-next-line no-await-in-loop
+    const result = await assignScorersOnce(clone);
+    const score = result.assignedCount;
+    if (score > bestScore) {
+      bestResult = result;
+    }
+  }
+  return commitResult(bestResult);
+}
+
+export async function assignScorersOnce(assignedMatches) {
   const newAssignements = [];
   const conflicts = [];
   let afterCutOffCount = 0;
@@ -53,12 +71,38 @@ export async function assignScorers(assignedMatches) {
       matchToScore[SCORER_1] = getScorerFullName(bestCandidate);
       matchToScore[SCORER_PHONE_1] = bestCandidate[CLUBDESK_PHONE];
       assignedCount++;
+      matchToScore.availability = availability;
       newAssignements.push(matchToScore);
     }
   }
+  return {
+    assignedMatches,
+    newAssignements,
+    conflicts,
+    afterCutOffCount,
+    conflictCount,
+    assignedCount,
+    alreadyAssignedCount,
+    total,
+    noCandidatesCount,
+  };
+}
+
+async function commitResult(data) {
+  const {
+    assignedMatches,
+    newAssignements,
+    conflicts,
+    afterCutOffCount,
+    conflictCount,
+    assignedCount,
+    alreadyAssignedCount,
+    total,
+    noCandidatesCount,
+  } = data;
 
   console.log('New assignements:');
-  logMatches(newAssignements);
+  logMatches(newAssignements, { availabilityScore: true });
 
   if (conflicts.length > 0) {
     console.log('Conflicts:');
@@ -74,13 +118,13 @@ export async function assignScorers(assignedMatches) {
 
   console.log(
     chalk.blue(`
-  Total:            ${total}
-  Assigned:         ${assignedCount}
-  Conflict:         ${conflictCount}
-  No candidates:    ${noCandidatesCount}
-  After cutoff:     ${afterCutOffCount}
-  Already assigned: ${alreadyAssignedCount}
-  `),
+      Total:            ${total}
+      Assigned:         ${assignedCount}
+      Conflict:         ${conflictCount}
+      No candidates:    ${noCandidatesCount}
+      After cutoff:     ${afterCutOffCount}
+      Already assigned: ${alreadyAssignedCount}
+      `),
   );
 
   return assignedMatches;

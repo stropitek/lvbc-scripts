@@ -1,4 +1,5 @@
 import {
+  findClubdeskScorer,
   formatPhoneNumber,
   getScorerFullName,
   getScorerId,
@@ -33,6 +34,11 @@ export function logMatchDateChange(originalAndNew) {
   console.table(list);
 }
 
+/**
+ *
+ * @param {*} matches
+ * @param {{matchId?: boolean, error?: boolean, homeTeam?: boolean, awayTeam?: boolean, scorerPhone?: boolean}} options
+ */
 export function logMatches(matches, options = {}) {
   const simplified = matches.map((match) => {
     const list = {
@@ -61,6 +67,10 @@ export function logMatches(matches, options = {}) {
     }
     if (options.error) {
       list.error = match.error;
+    }
+    if (options.scorerPhone && match[SCORER_ID]) {
+      const scorer = findClubdeskScorer(match[SCORER_ID]);
+      list['Scorer phone'] = scorer[CLUBDESK_PHONE];
     }
     return list;
   });
