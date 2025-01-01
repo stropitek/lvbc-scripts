@@ -7,10 +7,12 @@ import {
   TRAINING_CONFLICT_SCORE,
   BASELINE_SCORE,
   POSITIVE_MATCH_CONFLICT_SCORE,
+  IS_NEW_SCORER_SCORE,
 } from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
   CLUBDESK_GROUPS,
+  CLUBDESK_SCORER_ROLE,
   DATE,
   LOCATION,
   SCORER_1,
@@ -153,6 +155,12 @@ export function getAvailabilityScore(scorer, match) {
     scores.push(getMatchConflictScore(match, conflictingMatch));
   }
 
+  if (scorer[CLUBDESK_SCORER_ROLE] === 'Nouveau marqueur') {
+    scores.push({
+      score: IS_NEW_SCORER_SCORE,
+      reason: 'New scorer with baseline availability',
+    });
+  }
   scores.sort((score1, score2) => score1.score - score2.score);
   return scores.length === 0
     ? { score: BASELINE_SCORE, reason: 'Regular: no conflict' }
