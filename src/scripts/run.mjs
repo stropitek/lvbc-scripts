@@ -8,6 +8,7 @@ import {
   showAvailableMatches,
 } from '../core/matches.mjs';
 import {
+  printScorerList,
   showAvailableScorers,
   showUnassignedScorers,
 } from '../core/scorers.mjs';
@@ -18,6 +19,7 @@ import {
   TASK_FIND_MATCH,
   TASK_FIND_SCORER,
   TASK_UNASSIGNED,
+  TASK_PRINT_SCORERS,
 } from '../utils/constants.mjs';
 import {
   enquireAssignmentSheet,
@@ -70,6 +72,9 @@ switch (task) {
     showAvailableMatches(scorer, assignedMatches);
     break;
   }
+  case TASK_PRINT_SCORERS:
+    await printScorerList();
+    break;
   default:
     throw new Error('Unknown task');
 }

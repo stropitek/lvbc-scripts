@@ -64,3 +64,4 @@ export const TASK_CHECK = 'Check sheet';
 export const TASK_UNASSIGNED = 'Show unassigned players';
 export const TASK_FIND_SCORER = 'Find a scorer for a match';
 export const TASK_FIND_MATCH = 'Find a match for a scorer';
+export const TASK_PRINT_SCORERS = 'Print scorers (for google sheet)';

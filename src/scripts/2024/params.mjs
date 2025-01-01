@@ -57,6 +57,8 @@ export const trainingSchedule = {
   ],
 };
 
+export const teamWhichCanBeWithoutScorer = new Set(['M18G', 'M16F']);
+
 export const validClubdeskLeagues = new Set(Object.keys(trainingSchedule));
 
 export const equipeToLeague = {

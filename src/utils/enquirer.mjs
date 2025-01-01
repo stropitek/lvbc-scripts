@@ -15,6 +15,7 @@ import {
   TEAM_HOME,
   DATE,
   TASK_FIND_MATCH,
+  TASK_PRINT_SCORERS,
 } from './constants.mjs';
 import { displayDate } from './log.mjs';
 
@@ -34,6 +35,7 @@ const runPrompt = new enquirer.Select({
     TASK_FIND_MATCH,
     TASK_UNASSIGNED,
     TASK_ASSIGN,
+    TASK_PRINT_SCORERS,
   ],
 });
 

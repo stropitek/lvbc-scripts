@@ -10,6 +10,7 @@ import {
   mergedMatches,
   SEASON_START,
   VBManagerInputFile,
+  teamWhichCanBeWithoutScorer,
 } from '../scripts/2024/params.mjs';
 import { translateLeagueToClubdesk } from '../utils/clubdesk.mjs';
 import {
@@ -97,7 +98,6 @@ function assertMatchDates(matches) {
 }
 
 export async function loadScoredMatches(file) {
-  const teamWhichCanBeWithoutScorer = new Set(['M18G']);
   // File does not exist, continue
 
   const vbmMatches = await loadVbmMatches();
@@ -202,7 +202,7 @@ export async function checkScoredMatches(scoredMatches) {
     if (!scorerSheetId) {
       notAssigned.push(match);
     } else {
-      const scorerId = getScorerId(scorerSheetId);
+      const scorerId = getScorerId(match);
       const scorer = scorers.find(
         (scorer) => scorer[CLUBDESK_UID] === scorerId,
       );

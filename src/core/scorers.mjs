@@ -177,6 +177,11 @@ async function loadClubdeskPlayers() {
   return uniquePlayers;
 }
 
+/**
+ *
+ * @param {loadExempted?: boolean} options
+ * @returns list of clubdesk people who are active and are scorers.
+ */
 export async function loadClubdeskScorers(options = {}) {
   const { loadExempted = false } = options;
 
@@ -294,4 +299,13 @@ export function getScorerId(match) {
     return parseInt(result2.groups.uid, 10);
   }
   return null;
+}
+
+export async function printScorerList() {
+  const players = await loadClubdeskScorers({ loadExempted: true });
+  console.log(
+    players
+      .map((player) => getScorerFullName(player, { withClubdeskId: true }))
+      .join('\n'),
+  );
 }
