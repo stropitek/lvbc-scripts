@@ -6,6 +6,7 @@ import {
 
 import {
   CLUBDESK_PHONE,
+  CLUBDESK_SCORER_ROLE,
   CLUBDESK_UID,
   DATE,
   MATCH_ID,
@@ -85,6 +86,9 @@ export function logScorers(scorers, options) {
     const entry = {};
     entry.ID = scorer[CLUBDESK_UID];
     entry.Name = getScorerFullName(scorer);
+    if (scorer[CLUBDESK_SCORER_ROLE]) {
+      entry.Marqueur = scorer[CLUBDESK_SCORER_ROLE];
+    }
     entry.Phone = formatPhoneNumber(scorer[CLUBDESK_PHONE]);
     if (options?.numScoredMatches) {
       if (scorer.numScoredMatches === undefined) {
