@@ -301,8 +301,14 @@ export function getScorerId(match) {
   return null;
 }
 
-export async function printScorerList() {
-  const players = await loadClubdeskScorers({ loadExempted: true });
+/**
+ * Print the list of all the scorers
+ * @param {{showAll?: boolean}} options
+ */
+export async function printScorerList(options = {}) {
+  const players = options.showAll
+    ? await loadClubdeskPlayers()
+    : await loadClubdeskScorers({ loadExempted: true });
   console.log(
     players
       .map((player) => getScorerFullName(player, { withClubdeskId: true }))

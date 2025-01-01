@@ -74,3 +74,17 @@ export function enquireAssignmentSheet() {
 export function enquireRunTask() {
   return runPrompt.run();
 }
+
+const printScorerTypePrompt = new enquirer.Select({
+  name: 'Scorer type',
+  message: 'Pick a scorer type',
+  choices: ['Active', 'All'],
+});
+
+/**
+ *
+ * @returns {'Active' | 'All'}
+ */
+export function enquirePrintScorerType() {
+  return printScorerTypePrompt.run();
+}

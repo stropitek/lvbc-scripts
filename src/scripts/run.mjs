@@ -24,6 +24,7 @@ import {
 import {
   enquireAssignmentSheet,
   enquireMatch,
+  enquirePrintScorerType,
   enquireRunTask,
   enquireScorer,
 } from '../utils/enquirer.mjs';
@@ -72,9 +73,11 @@ switch (task) {
     showAvailableMatches(scorer, assignedMatches);
     break;
   }
-  case TASK_PRINT_SCORERS:
-    await printScorerList();
+  case TASK_PRINT_SCORERS: {
+    const printType = await enquirePrintScorerType();
+    await printScorerList({ showAll: printType === 'All' });
     break;
+  }
   default:
     throw new Error('Unknown task');
 }
