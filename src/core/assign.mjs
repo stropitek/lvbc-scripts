@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import { assignedFile, ASSIGNMENT_CUTOFF } from '../scripts/2024/params.mjs';
 import {
   CLUBDESK_PHONE,
-  CLUBDESK_UID,
   DATE,
   PUBLIC_MATCH_FIELDS,
   SCORER_1,

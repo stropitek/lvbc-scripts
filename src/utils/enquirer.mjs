@@ -1,9 +1,10 @@
-import fs from 'node:fs/promises';
-
 import enquirer from 'enquirer';
 
 import { getScorerFullName, loadClubdeskScorers } from '../core/scorers.mjs';
-import { sharedGoogleSheetFile, VBManagerInputFile } from '../scripts/2024/params.mjs';
+import {
+  sharedGoogleSheetFile,
+  VBManagerInputFile,
+} from '../scripts/2024/params.mjs';
 
 import {
   TASK_ASSIGN,
@@ -17,11 +18,7 @@ import {
 } from './constants.mjs';
 import { displayDate } from './log.mjs';
 
-
-const matchesFileOptions = [
-  sharedGoogleSheetFile,
-  VBManagerInputFile,
-];
+const matchesFileOptions = [sharedGoogleSheetFile, VBManagerInputFile];
 const selectPrompt = new enquirer.Select({
   name: 'Match sheet',
   message: 'Pick a match sheet to read from',
