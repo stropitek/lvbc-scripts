@@ -53,7 +53,7 @@ export function getLeagues(scorer) {
  * @returns A list of scorers in order of priority, first based on the number of matches scored, then on their availability for the match.
  */
 export function getCandidates(assignedMatches, matchToScore) {
-  const matchByScorer = groupBy(assignedMatches, SCORER_ID);
+  const matchByScorer = groupBy(assignedMatches, (match) => getScorerId(match));
   delete matchByScorer.undefined;
   delete matchByScorer[''];
   const candidates = shuffledScorers.slice().filter((candidate) => {
@@ -124,17 +124,35 @@ function createPairsBy3(scorers) {
   return pairs;
 }
 
-export function getScorerFullName(scorer, { omitLeague } = {}) {
+/**
+ *
+ * @param {*} scorer data. Assuming row coming from clubdesk.
+ * @param {{omitLeague: boolean, withClubdeskId: boolean}} options
+ * @returns
+ */
+export function getScorerFullName(scorer, { omitLeague, withClubdeskId } = {}) {
   assert(scorer, 'scorer must be defined');
   let scorerData = scorer;
   if (typeof scorer === 'number') {
     scorerData = clubdeskPlayers.find(
       (player) => player[CLUBDESK_UID] === scorer,
     );
-    assert(scorerData, 'Could not find scorer data');
+    assert(scorerData, 'Could not find scorer data from number');
+  } else if (typeof scorer === 'string') {
+    scorerData = clubdeskPlayers.find(
+      (player) => player[CLUBDESK_UID] === Number(scorer),
+    );
+    assert(scorerData, 'Could not find scorer data from string');
   }
 
-  return `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}${omitLeague ? '' : ` (${getLeagues(scorerData).join(', ')})`}`;
+  let fullName = `${scorerData[CLUBDESK_FIRST_NAME]} ${scorerData[CLUBDESK_LAST_NAME]}`;
+  if (!omitLeague) {
+    fullName += ` (${getLeagues(scorerData).join(', ')})`;
+  }
+  if (withClubdeskId) {
+    fullName += ` [${scorerData[CLUBDESK_UID]}]`;
+  }
+  return fullName;
 }
 
 async function loadClubdeskPlayers() {
@@ -195,7 +213,12 @@ export async function loadClubdeskScorers(options = {}) {
   }
 }
 
-export function normalizeScorerId(scorerId) {
+/**
+ * Validate the scorer ID and convert it to a number.
+ * @param {*} scorerId
+ * @returns
+ */
+function normalizeScorerId(scorerId) {
   if (scorerId === undefined) {
     return scorerId;
   }
@@ -207,7 +230,7 @@ export function normalizeScorerId(scorerId) {
 }
 
 export function addScorerStats(scorers, assignedMatches) {
-  const matchByScorer = groupBy(assignedMatches, SCORER_ID);
+  const matchByScorer = groupBy(assignedMatches, (match) => getScorerId(match));
   for (let scorer of scorers) {
     scorer.numScoredMatches = matchByScorer[scorer[CLUBDESK_UID]]?.length ?? 0;
   }
@@ -250,4 +273,25 @@ export function formatPhoneNumber(phoneNumber) {
     }
   }
   return phoneNumber;
+}
+
+const UID_REGEX = /^(?<uid>\d{7})$/;
+const NAME_UID_REGEX = /\[(?<uid>\d{7})\]$/;
+/**
+ * From the UID column of google spreadsheet, extract the scorer ID.
+ * The column can be formatted as just the ID or as ".*[ID]".
+ * @param {*} match
+ * @returns {number | null} scorer ID
+ */
+export function getScorerId(match) {
+  const matchUid = match[SCORER_ID] ? String(match[SCORER_ID]) : '';
+  const result1 = UID_REGEX.exec(matchUid);
+  if (result1?.groups?.uid) {
+    return parseInt(result1.groups.uid, 10);
+  }
+  const result2 = NAME_UID_REGEX.exec(matchUid);
+  if (result2?.groups?.uid) {
+    return parseInt(result2.groups.uid, 10);
+  }
+  return null;
 }

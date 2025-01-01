@@ -14,12 +14,11 @@ import {
   DATE,
   LOCATION,
   SCORER_1,
-  SCORER_ID,
 } from '../utils/constants.mjs';
 import { isSameDay } from '../utils/date.mjs';
 
 import { loadVbmMatches } from './matches.mjs';
-import { getLeagues, getScorerFullName } from './scorers.mjs';
+import { getLeagues, getScorerFullName, getScorerId } from './scorers.mjs';
 
 const hourRegex = /^\d{2}:\d{2}$/;
 
@@ -160,9 +159,15 @@ export function getAvailabilityScore(scorer, match) {
     : scores[0];
 }
 
+/**
+ *
+ * @param {*} match from google spreadsheet
+ * @returns {string | null} error message if there is a mismatch, null otherwise
+ */
 export function getNameMismatchError(match) {
-  if (match[SCORER_ID]) {
-    const scorerName = getScorerFullName(match[SCORER_ID], {
+  const scorerId = getScorerId(match);
+  if (scorerId) {
+    const scorerName = getScorerFullName(scorerId, {
       omitLeague: true,
     });
     if (!match[SCORER_1]) {

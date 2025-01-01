@@ -48,7 +48,9 @@ export async function assignScorers(assignedMatches) {
       conflicts.push(matchToScore);
       conflictCount++;
     } else {
-      matchToScore[SCORER_ID] = bestCandidate[CLUBDESK_UID];
+      matchToScore[SCORER_ID] = getScorerFullName(bestCandidate, {
+        withClubdeskId: true,
+      });
       matchToScore[SCORER_1] = getScorerFullName(bestCandidate);
       matchToScore[SCORER_PHONE_1] = bestCandidate[CLUBDESK_PHONE];
       assignedCount++;

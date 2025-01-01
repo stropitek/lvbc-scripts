@@ -39,11 +39,7 @@ import {
   getNameMismatchError,
   hasTraining,
 } from './checks.mjs';
-import {
-  getLeagues,
-  loadClubdeskScorers,
-  normalizeScorerId,
-} from './scorers.mjs';
+import { getLeagues, getScorerId, loadClubdeskScorers } from './scorers.mjs';
 
 const excludedMatchIDs = new Set(Object.values(mergedMatches).flat());
 
@@ -126,7 +122,9 @@ export async function loadScoredMatches(file) {
     match[LOCATION] = vbm[LOCATION];
     match[LEAGUE] = vbm[LEAGUE];
     match[GENDER] = vbm[GENDER];
-    match[SCORER_ID] = normalizeScorerId(match[SCORER_ID]);
+    match[SCORER_ID] = match[SCORER_ID]
+      ? String(match[SCORER_ID])
+      : match[SCORER_ID];
 
     return match;
   });
@@ -200,12 +198,13 @@ export async function checkScoredMatches(scoredMatches) {
       nameMismatch.push(match);
     }
 
-    const scorerID = match[SCORER_ID];
-    if (!scorerID) {
+    const scorerSheetId = match[SCORER_ID];
+    if (!scorerSheetId) {
       notAssigned.push(match);
     } else {
+      const scorerId = getScorerId(scorerSheetId);
       const scorer = scorers.find(
-        (scorer) => scorer[CLUBDESK_UID] === scorerID,
+        (scorer) => scorer[CLUBDESK_UID] === scorerId,
       );
       if (!scorer) {
         invalidScorer.push(match);
