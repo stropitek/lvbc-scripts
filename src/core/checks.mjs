@@ -62,7 +62,7 @@ export function hasConflict(match, scorer) {
 export function findConflict(match, scorer) {
   const sameDayMatch = findSameDayMatch(match, scorer);
   if (sameDayMatch) {
-    return getMatchConflictScore(sameDayMatch, match) === 0
+    return getMatchConflictScore(sameDayMatch, match).score === 0
       ? sameDayMatch
       : undefined;
   }
